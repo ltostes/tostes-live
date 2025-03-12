@@ -1,0 +1,1 @@
+# The first ever setup of tostes.live :)
