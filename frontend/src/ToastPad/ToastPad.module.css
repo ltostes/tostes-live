@@ -24,6 +24,6 @@
         this, we'll slide it up and to the left by 50% of
         its own size.
     */
-    transform: translate(-50%, -50%);
+    /* transform: translate(-50%, -50%); */
     /* filter: drop-shadow(4px 8px 0px hsla(240, 1%, 49%, 0.5)); */
 }

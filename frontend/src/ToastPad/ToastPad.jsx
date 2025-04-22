@@ -8,7 +8,7 @@ function ToastPad() {
     const [toasts, setToasts] = React.useState([]);
 
     const sizeScale = d3.scaleLinear()
-                        .range([50,120]);
+                        .range([20,120]);
     const rotationGenerator = d3.randomNormal(0,45);
 
     function addToast(event) {
@@ -57,7 +57,7 @@ function ToastPad() {
                     top: toast.y,
                     width: toast.width,
                     height: toast.height,
-                    transform: `rotate(${toast.rotation}deg)`
+                    transform: `translate(-50%, -50%) rotate(${toast.rotation}deg)`
                 }}
             >
                 <Toast/>
