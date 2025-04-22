@@ -1,5 +1,5 @@
-import logo from './logo.svg';
 import './App.css';
+import ToastPad from './ToastPad/ToastPad'
 
 function App() {
   return (
@@ -9,6 +9,7 @@ function App() {
           Tostes tá vivo!
         </p>
       </header>
+      <ToastPad/>
     </div>
   );
 }
