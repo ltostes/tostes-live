@@ -11,15 +11,19 @@ function ToastGraph(data) {
         const plot = Plot.plot({
             margin: 10,
             x: {
-                axis: null
+                axis: null,
+                padding: 0.2
             },
             y: {
                 axis: null
             },
+            inset: 20,
             marks: [
                 Plot.rectY(data.data, {
                     ...Plot.binX({y: "count"}, {x: 'width'}),
-                    radius: 2
+                    r: 50,
+                    insetLeft: 10,
+                    fill: 'white'
                 })
             ]
         }

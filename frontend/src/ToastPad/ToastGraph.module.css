@@ -6,8 +6,8 @@
     aspect-ratio: 2 / 1;
     margin: 0 auto;
     border-radius: 4px;
-    /* background: transparent; */
-    background: white;
-    border: 1px solid whitesmoke;
+    background: transparent;
+    /* background: white; */
+    /* border: 1px solid whitesmoke; */
     /* cursor: pointer; */
 }
