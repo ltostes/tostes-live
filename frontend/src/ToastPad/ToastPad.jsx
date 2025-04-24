@@ -1,6 +1,7 @@
 import styles from './ToastPad.module.css'
 import React from 'react'
 import * as d3 from 'd3';
+import ToastGraph from './ToastGraph';
 import Toast from './Toast';
 
 function ToastPad() {
@@ -64,6 +65,7 @@ function ToastPad() {
             </button>
 
     ))}
+        <ToastGraph data={toasts}/>
     </>
   );
 }
