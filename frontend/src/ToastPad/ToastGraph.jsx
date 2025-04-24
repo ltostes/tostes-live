@@ -3,24 +3,30 @@ import React from 'react'
 import * as d3 from 'd3';
 import * as Plot from "@observablehq/plot";
 
-function ToastGraph(data) {
+function ToastGraph({data}) {
     const containerRef = React.useRef();
     
     React.useEffect(() => {
         if (data === undefined) return;
+
+        const y_domain = [0, d3.max([20, data.length /5])]
+
         const plot = Plot.plot({
             margin: 10,
             x: {
                 axis: null,
-                padding: 0.2
+                padding: 0.2,
+                domain: [20, 120],
+                nice: true
             },
             y: {
-                axis: null
+                axis: null,
+                domain: y_domain
             },
             inset: 20,
             marks: [
-                Plot.rectY(data.data, {
-                    ...Plot.binX({y: "count"}, {x: 'width'}),
+                Plot.rectY(data, {
+                    ...Plot.binX({y: "count", thresholds: 20}, {x: 'width'}),
                     r: 50,
                     insetLeft: 10,
                     fill: 'white'
