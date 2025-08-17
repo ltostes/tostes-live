@@ -2,19 +2,18 @@ import React from 'react';
 
 import styles from './Main.module.css'
 
-import ToastPad from '../../components/ToastPad/ToastPad';
+import { Link } from 'react-router-dom';
+
+import StandardPage from '../../components/StandardPage/StandardPage';
 
 function Main() {
-  return (
-    <div className="App">
-      <header className={styles.mainHeader}>
-        <p>
-          tostes.live
-        </p>
-      </header>
-      <ToastPad/>
-    </div>
-  )
+  return <StandardPage 
+      title={'tostes.live'}
+    >
+      <Link to={"/gmtk-gamejam-2025"}>
+        #1 RollerCoaster Rama!
+      </Link>
+    </StandardPage>
 }
 
 export default Main;
