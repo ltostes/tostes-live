@@ -1,16 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import reportWebVitals from './reportWebVitals';
 
-import App from './App';
-import ToastPad from './ToastPad/ToastPad';
+import './reset.css'
+import './index.css';
+
+import Main from './pages/Main/Main';
+import RollerCoasterRama from './pages/RollerCoasterRama';
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
-  { path: "/", element: <App />},
-  { path: "/toastpad", element: <ToastPad />},
+  { path: "/", element: <Main />},
+  { path: "/gmtk-gamejam-2025", element: <RollerCoasterRama />},
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -19,8 +20,3 @@ root.render(
     <RouterProvider router={router} />
   </React.StrictMode>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

@@ -1,0 +1,19 @@
+import React from 'react';
+
+import styles from './Main.module.css'
+
+import { Link } from 'react-router-dom';
+
+import StandardPage from '../../components/StandardPage/StandardPage';
+
+function Main() {
+  return <StandardPage 
+      title={'tostes.live'}
+    >
+      <Link to={"/gmtk-gamejam-2025"}>
+        #1 RollerCoaster Rama!
+      </Link>
+    </StandardPage>
+}
+
+export default Main;
