@@ -9,9 +9,10 @@ function RollerCoasterRama() {
       title={'RollerCoaster Rama!'}
       description={
         <>
-          An amazing game that was made in the GMTK Game Jam 2025.
+          A game made for the GMTK Game Jam 2025.
           <br/>
-          It is the first of many
+          <br/>
+          <a href='#about'>@tostes.live</a>
         </>
       }
       className={styles.light}
