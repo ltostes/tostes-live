@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Client } from 'boardgame.io/React';
+import { Client } from 'boardgame.io/react';
 import { INVALID_MOVE } from 'boardgame.io/core';
 
 function IsVictory(cells) {
