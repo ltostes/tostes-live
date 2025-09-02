@@ -62,52 +62,38 @@ const TicTacToe = {
   },
 };
 
-export function TicTacToeBoard({ ctx, G, moves }) {
+export function TicTacToeBoard({ ctx, G, moves, reset }) {
   const onClick = (id) => moves.clickCell(id);
 
-  let winner = '';
-  if (ctx.gameover) {
-    winner =
-      ctx.gameover.winner !== undefined ? (
-        <div id="winner">Winner: {ctx.gameover.winner}</div>
-      ) : (
-        <div id="winner">Draw!</div>
-      );
-  }
+  const { cells } = G;
 
-  const cellStyle = {
-    border: '1px solid #555',
-    width: '50px',
-    height: '50px',
-    lineHeight: '50px',
-    textAlign: 'center',
-  };
-
-  let tbody = [];
-  for (let i = 0; i < 3; i++) {
-    let cells = [];
-    for (let j = 0; j < 3; j++) {
-      const id = 3 * i + j;
-      cells.push(
-        <td key={id}>
-          {G.cells[id] ? (
-            <div style={cellStyle}>{G.cells[id]}</div>
-          ) : (
-            <button style={cellStyle} onClick={() => onClick(id)} />
-          )}
-        </td>
-      );
-    }
-    tbody.push(<tr key={i}>{cells}</tr>);
-  }
+  const newboard = (
+    <div class="grid grid-cols-3 gap-4">
+      {cells.map((cell, i) => (
+        <button 
+          key={i} 
+          class="h-16 w-16 rounded-full bg-blue-200 transition duration-200 ease-in-out hover:shadow-lg/30 hover:scale-110"
+          onClick={() => onClick(i)}
+        >
+          <span className='text-3xl font-bold text-blue-600'>{cell}</span>
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div>
-      <h1 className='text-3xl font-bold underline'>Tic Tac Toe</h1>
-      <table id="board">
-        <tbody>{tbody}</tbody>
-      </table>
-      {winner}
+      {newboard}
+      <div className={`h-16 text-2xl font-bold translate-y-5 text-center  opacity-${ctx.gameover ? 100 : 0}`}>
+        <h1>{
+        ctx.gameover ? ctx.gameover.winner ? `Winner: ${ctx.gameover.winner}` : 'Draw!' : 'None'
+        }</h1>
+        <br/>
+        <button 
+         className='mt-2 rounded-full bg-blue-500 px-4 py-2 font-semibold text-white transition duration-200 ease-in-out hover:bg-blue-600 hover:shadow-lg/30 hover:scale-105'
+         onClick={reset}
+        >Restart Game</button>
+      </div>
     </div>
   );
 }
