@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@observablehq/plot": "^0.6.17",
     "@testing-library/dom": "^10.4.0",
@@ -40,7 +41,9 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.12",
     "@vitejs/plugin-react": "^5.0.2",
+    "tailwindcss": "^4.1.12",
     "vite": "^7.1.4"
   }
 }
