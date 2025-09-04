@@ -14,6 +14,7 @@ function DirectionControls({directionChosen, setDirectionChosen, playerPos, setP
                        `}
             onClick={() => {
               !directionChosen && setPlayerPos({...playerPos, dir: (playerPos.dir + 1 + 6) % 6});
+              setInstructionText("Antes de se mover, confirme a nova direção.");
             }}
           >
             ←
@@ -27,7 +28,7 @@ function DirectionControls({directionChosen, setDirectionChosen, playerPos, setP
             onClick={() => {
               if(directionChosen) return;
               setDirectionChosen(true);
-              setInstructionText("Escolha para onde se mover.");
+              setInstructionText("Para onde você vai?");
             }}
           >
             Confirmar direção
@@ -43,6 +44,7 @@ function DirectionControls({directionChosen, setDirectionChosen, playerPos, setP
                        `}
             onClick={() => {
               !directionChosen && setPlayerPos({...playerPos, dir: (playerPos.dir - 1 + 6) % 6});
+              setInstructionText("Antes de se mover, confirme a nova direção.");
             }}
           >
             →

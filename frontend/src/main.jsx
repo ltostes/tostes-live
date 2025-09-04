@@ -15,7 +15,7 @@ const router = createBrowserRouter([
   { path: "/", element: <Main />},
   { path: "/gmtk-gamejam-2025", element: <RollerCoasterRama />},
   { path: "/boardgameprototype", element: <BoardGamePrototype />},
-  { path: "/sobrevivenciaprototype", element: <SobrevivenciaPrototype />},
+  { path: "/surpresa", element: <SobrevivenciaPrototype />},
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
