@@ -1,0 +1,27 @@
+
+.hex-text {
+    font-size: 3px;
+    fill: #ffffff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    stroke: none;
+}
+
+.start {
+    fill: #f0e68c;
+}
+
+.land {
+    fill: #a3d977;
+    stroke: black;
+}
+
+.water {
+    fill: #1e90ff;
+    stroke: black;
+}
+
+.dirs {
+    stroke-width: 2px;
+    stroke: #ffffff;
+}
