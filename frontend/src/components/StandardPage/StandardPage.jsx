@@ -29,7 +29,7 @@ function StandardPage({ title, description, mode, children, ...delegated }) {
   )
 }
 
-function CenteredMain({ children, className = '', ...delegated }) {
+export function CenteredMain({ children, className = '', ...delegated }) {
   const centeredMainClassName = `${styles.main} ${className}`
   return (
     <div 
@@ -43,7 +43,7 @@ function CenteredMain({ children, className = '', ...delegated }) {
   )
 }
 
-function Section({ children, ...delegated }) {
+export function Section({ children, ...delegated }) {
   return (
     <div 
       className={styles.section}
@@ -54,7 +54,7 @@ function Section({ children, ...delegated }) {
   )
 }
 
-function Divider({...delegated}) {
+export function Divider({...delegated}) {
   return (
     <div 
       className={styles.divider}
@@ -63,7 +63,7 @@ function Divider({...delegated}) {
   )
 }
 
-function Header({ children, ...delegated }) {
+export function Header({ children, ...delegated }) {
   return (
     <p 
       className={styles.header}
