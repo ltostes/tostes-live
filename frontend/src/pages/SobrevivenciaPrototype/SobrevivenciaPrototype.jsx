@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react'
 import styles from './SobrevivenciaPrototype.module.css'
 
-import { CenteredMain } from '../../components/StandardPage/StandardPage';
 import MainMap from '../../components/Sobrevivencia/MainMap';
 
 import { Hex, HexUtils } from 'react-hexgrid';
@@ -9,18 +8,15 @@ import { Hex, HexUtils } from 'react-hexgrid';
 import { STARTING_LOCATIONS } from './constants';
 import { translateRowColToGRS } from '../../components/Sobrevivencia/MainMap';
 
-// import FlagIcon from '/assets/flag.svg?react';
 import CardPortal from '../../components/Sobrevivencia/CardPortal';
+import DirectionControls from '../../components/Sobrevivencia/DirectionControls/DirectionControls';
 
 function SobrevivenciaPrototype() {
 
-  const [mapTranslation, setMapTranslation] = React.useState({ x: 0, y: 0 });
-  const [mapZoom, setMapZoom] = React.useState(1);
 
   const [playerPos, setPlayerPos] = React.useState({ hex: new Hex(0,0,0), dir: 2});
   const [gameStarted, setGameStarted] = React.useState(false);
   const [gameOver, setGameOver] = React.useState(false);
-  // const [dirTypes, setDirTypes] = React.useState(['none','none','none']);
 
   const [directionChosen, setDirectionChosen] = React.useState(false);
 
@@ -60,84 +56,6 @@ function SobrevivenciaPrototype() {
           );
   };
 
-  const directionControls = (
-    <div className='flex flex-row justify-center items-center mt-4 gap-12'>
-          <button 
-            className={`m-1 p-2
-                       bg-blue-500
-                       text-white 
-                       rounded-2xl text-9xl border-4 
-                       
-                       ${directionChosen ? 'opacity-50 cursor-not-allowed' 
-                        : 'border-amber-300 scale-150 transition hover:scale-200'}
-                       `}
-            onClick={() => {
-              !directionChosen && setPlayerPos({...playerPos, dir: (playerPos.dir + 1 + 6) % 6});
-            }}
-          >
-            ←
-          </button>
-          <button
-            className={`m-1 p-4 border
-                    text-white rounded-2xl text-9xl  
-                    ${directionChosen ? 'opacity-50 bg-gray-400 cursor-not-allowed border-gray-600' 
-                      : 'bg-green-700 transition hover:scale-120'}
-                    `}
-            onClick={() => {
-              if(directionChosen) return;
-              setDirectionChosen(true);
-              setInstructionText("Direção confirmada. Agora você pode mover o personagem.");
-            }}
-          >
-            Confirmar direção
-          </button>
-          <button 
-            className={`m-1 p-2
-                       bg-blue-500
-                       text-white 
-                       rounded-2xl text-9xl border-4 
-                       
-                       ${directionChosen ? 'opacity-50 cursor-not-allowed' 
-                        : 'border-amber-300 scale-150 transition hover:scale-200'}
-                       `}
-            onClick={() => {
-              !directionChosen && setPlayerPos({...playerPos, dir: (playerPos.dir - 1 + 6) % 6});
-            }}
-          >
-            →
-          </button>
-        </div>
-  )
-
-  const mapControls = (
-    <div>
-      <div>
-        <input 
-          type="range" 
-          min="0.5" 
-          max="2" 
-          step="0.001" 
-          value={mapZoom}
-          onChange={(e) => setMapZoom(e.target.value)} 
-          />
-        <span> Zoom: {mapZoom}</span>
-      </div>
-      <div>
-        {
-          [0,1,2,3,4,5].map(dir => (
-            <button 
-            key={dir}
-            className={`m-1 p-2 border ${playerPos.dir === dir ? 'bg-blue-500 text-white' : 'bg-white'}`}
-            onClick={() => setPlayerPos({...playerPos, dir})}
-            >
-              {dir}
-            </button>
-          ))
-        }
-      </div>
-    </div>
-  )
-
   return (
     <div className='h-screen w-full flex justify-center items-center p-4 bg-blue-100'>
       <div className='flex flex-col items-center mb-4'> 
@@ -150,7 +68,7 @@ function SobrevivenciaPrototype() {
         </div>
         <div className='w-400 h-160'>
           <MainMap 
-            controls={{ translation: mapTranslation, zoom: mapZoom }}
+            controls={{ translation: { x: 0, y: 0 }, zoom: 1 }} // To be turned into states later
             playerPos={playerPos}
             movePlayer={movePlayer}
             gameStarted={gameStarted}
@@ -171,7 +89,15 @@ function SobrevivenciaPrototype() {
             </g>
           </MainMap>
         </div>
-        {gameStarted && !gameOver && directionControls}
+        {gameStarted && !gameOver && 
+          <DirectionControls
+            directionChosen={directionChosen}
+            setDirectionChosen={setDirectionChosen}
+            playerPos={playerPos}
+            setPlayerPos={setPlayerPos}
+            setInstructionText={setInstructionText}
+          />
+          }
         {/* {mapControls} */}
         {gameStarted && directionChosen && <CardPortal>
           <div 
@@ -211,7 +137,9 @@ function SobrevivenciaPrototype() {
           </div>
           </CardPortal>}
           {gameOver && <div 
-            className='mt-4 p-4
+            className='
+             absolute bottom-3
+             mt-4 p-4
              bg-fuchsia-200 border-4
              border-fuchsia-400 rounded-2xl
              text-fuchsia-800 text-2xl font-bold
