@@ -32,7 +32,7 @@ function SobrevivenciaPrototype() {
   const movePlayer = (newHex) => {
     setPlayerPos({...playerPos, hex: newHex});
     setDirectionChosen(false);
-    setInstructionText("Personagem movido. Agora você pode escolher a direção novamente.");
+    setInstructionText("Continue nessa direção ou escolha outra.");
   }
 
   const [instructionText, setInstructionText] = React.useState("Escolha a posição inicial do personagem");
