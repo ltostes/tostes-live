@@ -13,6 +13,9 @@ function Main() {
       <Link to={"/gmtk-gamejam-2025"}>
         #1 RollerCoaster Rama!
       </Link>
+      <Link to={"/surpresa"}>
+        #2 Surpresa
+      </Link>
     </StandardPage>
 }
 
