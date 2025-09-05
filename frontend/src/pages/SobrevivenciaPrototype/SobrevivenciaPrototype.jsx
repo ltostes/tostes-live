@@ -1,18 +1,23 @@
 import React, { useEffect } from 'react'
 import styles from './SobrevivenciaPrototype.module.css'
 
-import MainMap from '../../components/Sobrevivencia/MainMap';
+import useToggle from '../../hooks/useToggle';
 
 import { Hex, HexUtils } from 'react-hexgrid';
+import { Flag } from 'react-feather';
 
-import { STARTING_LOCATIONS } from './constants';
 import { translateRowColToGRS } from '../../components/Sobrevivencia/MainMap';
-
+import MainMap from '../../components/Sobrevivencia/MainMap';
 import CardPortal from '../../components/Sobrevivencia/CardPortal';
 import DirectionControls from '../../components/Sobrevivencia/DirectionControls/DirectionControls';
 
+
+import { STARTING_LOCATIONS } from './constants';
+import PopupModal from '../../components/PopupModal/PopupModal';
+
 function SobrevivenciaPrototype() {
 
+  const [disclaimer, toggleDisclaimer] = useToggle(true);
 
   const [playerPos, setPlayerPos] = React.useState({ hex: new Hex(0,0,0), dir: 2});
   const [gameStarted, setGameStarted] = React.useState(false);
@@ -58,6 +63,28 @@ function SobrevivenciaPrototype() {
 
   return (
     <div className='h-screen w-full flex justify-center items-center p-4 bg-blue-100'>
+      {disclaimer && <PopupModal handleDismiss={toggleDisclaimer}>
+        <div className='text-center p-2 text-3xl text-blue-500 min-w-[400px]'>
+          <h2 className='font-bold mb-2'>Bem-vindo!</h2>
+          <p className='text-xl'>Este é uma primeira iteração de um protótipo digital para o jogo "Sobrevivência na Amazônia".</p>
+          <p className='text-xl'>Seu principal intuito é servir de exemplo para um futuro desenvolvimento do jogo.</p>
+          <br />
+          <p className='text-xl'>As cartas não são dinâmicas, não há tabuleiro de jogador, dentre outras partes faltantes...</p>
+          <br />
+          <p className='text-xl'><i>Portanto não espere uma versão divertida e jogável <span className='animate-pulse font-semibold'>ainda</span>...</i></p>
+        </div>
+        <div className='flex justify-center pt-4'>
+          <button
+            className='mt-4
+            bg-blue-500 
+            text-white
+            px-4 py-2 rounded-2xl hover:bg-blue-600 transition'
+            onClick={toggleDisclaimer}
+            >
+            <span className='font-bold'>Ok, entendido!</span>
+          </button>
+        </div>
+      </PopupModal>}
       <div className='flex flex-col items-center mb-4'> 
         <div className='text-center p-2 text-4xl text-blue-500'>
           <h2 className='font-bold mb-2'>Protótipo digital <a className='transition hover:text-green-800 hover:animate-pulse' href="https://ludopedia.com.br/jogo/sobrevivencia-na-amazonia">Sobrevivência na Amazônia</a></h2>
@@ -82,10 +109,10 @@ function SobrevivenciaPrototype() {
                 </g>
             }
             <g row={5} col={10}>
-              <circle cx="0" cy="0" r="4" fill="none" stroke="red" />
+              {/* <circle cx="0" cy="0" r="4" fill="none" stroke="red" />
               <circle cx="0" cy="0" r="6.5" fill="none" stroke="red" />
-              <circle cx="0" cy="0" r="2" fill="red" />
-              {/* <FlagIcon width="12" height="12" x="-6" y="-6"/> */}
+              <circle cx="0" cy="0" r="2" fill="red" /> */}
+              <Flag size={12} x={6} y={6} className={`stroke-amber-500 fill-amber-400`}   />
             </g>
           </MainMap>
         </div>
