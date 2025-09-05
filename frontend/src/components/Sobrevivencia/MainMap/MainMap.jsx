@@ -96,11 +96,11 @@ function MainMap({controls, playerPos, movePlayer, gameStarted, children}) {
                 {/* <Text className={styles[`hex-text`]}>{`#${hex.key}. ${hex.q}, ${hex.r}, ${hex.s}`}</Text> */}
               </Hexagon>
             )
-          })}
+          })}        
+          </Layout>
           {
             updateChildrenPositions(children)
           }        
-          </Layout>
       </HexGrid>);
 }
 

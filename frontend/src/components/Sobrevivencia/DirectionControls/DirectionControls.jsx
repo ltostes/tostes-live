@@ -1,8 +1,10 @@
 import React from 'react';
 
+import { ChevronUp, Navigation2, RotateCcw, RotateCw } from 'react-feather';
+
 function DirectionControls({directionChosen, setDirectionChosen, playerPos, setPlayerPos, setInstructionText}) {
   return (
-    <div className='absolute bottom-5 flex flex-row justify-center items-center mt-4 gap-12'>
+    <div className='absolute bottom-5 flex flex-row justify-center items-center mt-4 gap-8'>
           <button 
             className={`m-1 p-2
                        bg-blue-500
@@ -10,18 +12,18 @@ function DirectionControls({directionChosen, setDirectionChosen, playerPos, setP
                        rounded-2xl text-9xl border-4 
                        
                        ${directionChosen ? 'opacity-50 cursor-not-allowed' 
-                        : 'border-amber-300 scale-150 transition hover:scale-200'}
+                        : 'border-amber-300 transition hover:scale-150'}
                        `}
             onClick={() => {
               !directionChosen && setPlayerPos({...playerPos, dir: (playerPos.dir + 1 + 6) % 6});
               setInstructionText("Antes de se mover, confirme a nova direção.");
             }}
           >
-            ←
+            <RotateCcw />
           </button>
           <button
             className={`m-1 p-4 border
-                    text-white rounded-2xl text-9xl  
+                    rounded-2xl
                     ${directionChosen ? 'opacity-50 bg-gray-400 cursor-not-allowed border-gray-600' 
                       : 'bg-green-700 transition hover:scale-120'}
                     `}
@@ -31,7 +33,7 @@ function DirectionControls({directionChosen, setDirectionChosen, playerPos, setP
               setInstructionText("Para onde você vai?");
             }}
           >
-            Confirmar direção
+            <span className='text-2xl font-extrabold'>Vamos!</span>
           </button>
           <button 
             className={`m-1 p-2
@@ -40,14 +42,14 @@ function DirectionControls({directionChosen, setDirectionChosen, playerPos, setP
                        rounded-2xl text-9xl border-4 
                        
                        ${directionChosen ? 'opacity-50 cursor-not-allowed' 
-                        : 'border-amber-300 scale-150 transition hover:scale-200'}
+                        : 'border-amber-300 transition hover:scale-150'}
                        `}
             onClick={() => {
               !directionChosen && setPlayerPos({...playerPos, dir: (playerPos.dir - 1 + 6) % 6});
               setInstructionText("Antes de se mover, confirme a nova direção.");
             }}
           >
-            →
+            <RotateCw />
           </button>
         </div>
   );
