@@ -66,10 +66,10 @@ function SobrevivenciaPrototype() {
       {disclaimer && <PopupModal handleDismiss={toggleDisclaimer}>
         <div className='text-center p-2 text-3xl text-blue-500 min-w-[400px]'>
           <h2 className='font-bold mb-2'>Bem-vindo!</h2>
-          <p className='text-xl'>Este é uma primeira iteração de um protótipo digital para o jogo "Sobrevivência na Amazônia".</p>
+          <p className='text-xl'>Esta é uma primeira iteração de um protótipo digital para o jogo "Sobrevivência na Amazônia".</p>
           <p className='text-xl'>Seu principal intuito é servir de exemplo para um futuro desenvolvimento do jogo.</p>
           <br />
-          <p className='text-xl'>As cartas não são dinâmicas, não há tabuleiro de jogador, dentre outras partes faltantes...</p>
+          <p className='text-xl'>As cartas não são dinâmicas, não há tabuleiro de jogador, dentre outras partes faltantes.</p>
           <br />
           <p className='text-xl'><i>Portanto não espere uma versão divertida e jogável <span className='animate-pulse font-semibold'>ainda</span>...</i></p>
         </div>
