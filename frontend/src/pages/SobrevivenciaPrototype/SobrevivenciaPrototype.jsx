@@ -5,6 +5,8 @@ import useToggle from '../../hooks/useToggle';
 
 import { Hex, HexUtils } from 'react-hexgrid';
 import { Flag } from 'react-feather';
+import { _ } from 'lodash';
+import * as d3 from "d3";
 
 import { translateRowColToGRS } from '../../components/Sobrevivencia/MainMap';
 import MainMap from '../../components/Sobrevivencia/MainMap';
@@ -33,7 +35,6 @@ function SobrevivenciaPrototype() {
       setInstructionText("Parabéns! Você chegou ao destino final.");
     }
   }, [playerPos]);
-
   const movePlayer = (newHex) => {
     setPlayerPos({...playerPos, hex: newHex});
     setDirectionChosen(false);
@@ -60,6 +61,14 @@ function SobrevivenciaPrototype() {
             </g>
           );
   };
+
+  function RandomCard() {
+    return (
+      <img 
+        src={`/assets/cards/${d3.format("03d")(_.sample(_.range(0,58)))}.webp`}
+        alt="Example" className='rounded-2xl h-150' />
+    )
+  }
 
   return (
     <div className='h-screen w-full flex justify-center items-center p-4 bg-blue-100'>
@@ -135,9 +144,7 @@ function SobrevivenciaPrototype() {
                 movePlayer(HexUtils.neighbor(hex, effectiveDir));
               }}
             >
-            <img 
-              src="/assets/Carta2.png" 
-              alt="Example" className='rounded-2xl' />
+            <RandomCard />
           </div>
           <div 
             className={`position-relative bg-white/70 p-2 rounded-2xl translate-y-[-15px] hover:translate-y-[-20px] transition-all duration-300`}
@@ -146,9 +153,7 @@ function SobrevivenciaPrototype() {
                 movePlayer(HexUtils.neighbor(hex, dir));
               }}
             >
-            <img 
-              src="/assets/Carta1.png" 
-              alt="Example" className='rounded-2xl' />
+            <RandomCard />
           </div>
           <div 
               className={`position-relative bg-white/70 p-2 rounded-2xl translate-y-0.5 hover:translate-y-0 transition-all duration-300`}
@@ -158,9 +163,7 @@ function SobrevivenciaPrototype() {
                 movePlayer(HexUtils.neighbor(hex, effectiveDir));
               }}
             >
-            <img 
-              src="/assets/Carta3.png" 
-              alt="Example" className='rounded-2xl' />
+            <RandomCard />
           </div>
           </CardPortal>}
           {gameOver && <div 

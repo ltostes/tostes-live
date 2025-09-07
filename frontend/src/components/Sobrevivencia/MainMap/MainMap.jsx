@@ -5,7 +5,7 @@ import styles from './MainMap.module.css'
 import { HexGrid, Layout, Hexagon, Text, Pattern, Path, Hex, HexUtils } from 'react-hexgrid';
 import Orientation from 'react-hexgrid/lib/models/Orientation';
 
-import { HEX_MAP_LAYOUT } from './constants';
+import { HEX_MAP_LAYOUT } from '../constants';
 
 export function translateRowColToGRS(row, col) {
   // convert row,col to g,r,s
