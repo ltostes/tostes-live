@@ -1,29 +1,73 @@
 import { HEX_MAP_LAYOUT } from "./constants"
+import { CARD_DEFINITIONS } from "./cards";
 
-import { PluginPlayer } from 'boardgame.io/plugins'
+import { _ } from 'lodash';
 
-function setup({ctx}, setupData) {
-
-    const hex_map = {
-        ...HEX_MAP_LAYOUT
-    };
-
-    // const 
-    // const 
-
-    return G
-}
+import { getHex, getTargetHexes } from "./utils";
 
 function playerSetup() {
-
+    return {
+        direction: null,
+        hex: null,
+        targetHexes: [],
+    }
 }
 
-export const SobrevivenciaGame = {
-    name: 'Sobrevivência na Amazônia',
+function selectStartLocation({G, ctx, events}, args) {
+
+    const { row, col, direction } = args;
+    const { hex_map } = G;
+    const { currentPlayer } = ctx;
+
+    const nextHex = getHex({row, col, hex_map})
+    
+    const nextLocation = {
+        direction: args.direction,
+        hex: nextHex,
+        targetHexes: getTargetHexes({hex: nextHex, direction, hex_map})
+    }
+
+    G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
+
+    events.endTurn();
+}
+
+
+function setup({ctx, random}, setupData) {
+
+    const base_hex_map = [
+        ...HEX_MAP_LAYOUT
+    ];
+
+    const hex_map = base_hex_map;
+
+    const base_forest_deck = CARD_DEFINITIONS.filter(f => f.type == 'forest');
+    const base_river_deck = CARD_DEFINITIONS.filter(f => f.type == 'river');
+
+    const forest_deck = random.Shuffle(base_forest_deck)
+    const river_deck = random.Shuffle(base_river_deck)
+
+    const players_state = Object.assign({},..._.times(ctx.numPlayers).map(player => ({[player]: playerSetup()})));
+
+    return {
+        hex_map,
+        forest_deck,
+        river_deck,
+        players_state,
+    }
+}
+
+
+export const sobrevivenciaGame = {
+    name: 'sobrevivencia_na_amazonia',
     setup,
-    plugins: [
-        PluginPlayer({
-            setup: playerSetup,
-        })
-    ]
+    phases: {
+        'startLocationSelection' : {
+            start:true,
+            moves: {
+                selectStartLocation
+            },
+            endIf: (({G}) => Object.values(G.players_state).every(({hex}) => hex != null))
+        }
+    }
 }
