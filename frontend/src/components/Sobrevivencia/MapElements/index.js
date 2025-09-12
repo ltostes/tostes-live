@@ -1,2 +1,4 @@
 export * from './FinishTile';
-export * from './StartLocation'
+export * from './PlayerTile';
+export * from './StartLocation';
+export * from './CustomHexTile';

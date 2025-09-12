@@ -2,12 +2,12 @@ import React from 'react';
 
 import styles from './HexMap.module.css'
 
-import { HexGrid, Layout, Hexagon, Text, Pattern, Path, Hex, HexUtils } from 'react-hexgrid';
+import { HexGrid, Layout, Hexagon } from 'react-hexgrid';
+import { _ } from 'lodash';
+
 import Orientation from 'react-hexgrid/lib/models/Orientation';
 
-import { HEX_MAP_LAYOUT } from '../constants';
-import { updateChildrenPositions } from './utils';
-import { translateRowColToGRS } from '../utils';
+import { CustomHexTile } from '../MapElements';
 
 function HexMap({ hex_map, controls, children}) {
 
@@ -32,7 +32,9 @@ function HexMap({ hex_map, controls, children}) {
         preserveAspectRatio="xMidYMid meet"
       >
         <Layout {...layoutDefs}>
-          {hex_map.map((hex) => {
+          {
+            // Base Background hex
+            hex_map.map((hex) => {
             const hexStyles = [styles[hex.type]]
 
             return (
@@ -40,14 +42,14 @@ function HexMap({ hex_map, controls, children}) {
                 key={hex.key}
                 q={hex.q} r={hex.r} s={hex.s}
                 className={hexStyles.join(' ')}
-                >
-              </Hexagon>
+              />
             )
-          })}        
-          </Layout>
+          })}      
           {
-            updateChildrenPositions(children, layoutDefs)
-          }        
+            // All children must be CustomTile (to be fit within a hexagon)
+            children.flat().filter(child => (React.isValidElement(child) && child.type === CustomHexTile))
+          }
+          </Layout>
       </HexGrid>);
 }
 

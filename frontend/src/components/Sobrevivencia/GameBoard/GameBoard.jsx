@@ -3,9 +3,9 @@ import styles from './GameBoard.module.css'
 import { Flag } from 'react-feather';
 
 import HexMap from '../HexMap/HexMap'
-import { FinishTile, StartLocation } from '../MapElements'
+import { FinishTile, PlayerTile, StartLocation } from '../MapElements'
 
-import { STARTING_LOCATIONS } from '../constants';
+import { CustomHexTile } from '../MapElements';
 
 function GameBoard({G, ctx, moves, reset}) {
 
@@ -21,19 +21,46 @@ function GameBoard({G, ctx, moves, reset}) {
           hex_map={G.hex_map}
           controls={{ translation: { x: 0, y: 0 }, zoom: 1 }} // To be turned into states later
         >
-          <FinishTile row={4} col={10}/>
+          <CustomHexTile
+            row={4} col={10}
+          >
+            <FinishTile/>
+          </CustomHexTile>
           {
-            STARTING_LOCATIONS.map((props) => {
+            ctx.phase == 'startLocationSelection' &&
+            G.start_locations.map((props, index) => {
               const {row, col, id, dir : direction} = props;
               return (
-                <StartLocation row={row} col={col} key={id} onClick={
+                <CustomHexTile row={row} col={col} key={id} onClick={
                   () => {
-                    moves.selectStartLocation({row, col, direction})
+                    moves.selectStartLocation({row, col, direction, index})
                   }
-                }/>
+                }>
+                  <StartLocation />
+                </CustomHexTile>
               )
             }
             )
+          }
+          {
+            // Player tokens
+            Object.entries(G.players_state).map(([playerId, playerState]) => {
+              console.log({playerId, playerState});
+              if (playerState.hex == null) return;
+              const {hex, color} = playerState;
+              const {q, r, s} = hex;
+              return (
+                <CustomHexTile
+                  q={q}
+                  r={r}
+                  s={s}
+                  style={{stroke: color}}
+                >
+                  <PlayerTile style={{fill: color}}/>
+                </CustomHexTile>
+              )
+            })
+              
           }
         </HexMap>
       </div>

@@ -8,6 +8,12 @@ export const STARTING_LOCATIONS = [
     { id: 6, row: 8, col: 18, dir: 2 },
 ]
 
+export const PLAYER_COLORS = [
+    'fuchsia',
+    'orange',
+    'teal',
+    'rose'
+]
 // Generated with https://docs.google.com/spreadsheets/d/1_a2cpSjOCRqpUG_rj5EJQTnwpdk0Oef0Wvwgay6lW1U/edit?gid=0#gid=0
 
 export const HEX_MAP_LAYOUT = [
