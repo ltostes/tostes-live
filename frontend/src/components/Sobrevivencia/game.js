@@ -30,7 +30,7 @@ function selectStartLocation({G, ctx, events}, args) {
 
     const nextHex = getHex({row, col, hex_map})
     
-    const nextLocation = getNextLocation({hex: nextHex, direction, hex_map})
+    const nextLocation = getNextLocation({hex: nextHex, direction, G})
 
     G.start_locations.splice(index,1);
     G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
@@ -50,9 +50,19 @@ function changeDirection({G, ctx}, clockwise=true) {
                             :   
                             currentDirection == 5 ? 0 : currentDirection + 1;
 
-    const nextLocation = getNextLocation({hex: playerHex, direction: nextDirection, hex_map});
+    const nextLocation = getNextLocation({hex: playerHex, direction: nextDirection, G});
 
     G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
+}
+
+function updatePlayersLocations({G}) {
+
+    Object.entries(G.players_state).forEach(([playerId,playerState]) => {
+        const { hex, direction } = playerState;
+        const nextLocation = getNextLocation({hex, direction, G});
+
+        G.players_state[playerId] = {...G.players_state[playerId], ...nextLocation};
+    })
 }
 
 function confirmDirection({G, ctx, events, random}) {
@@ -92,9 +102,7 @@ function moveCurrentPlayer({G, ctx, events}, {hex, direction}) {
     const { hex_map } = G;
     const { currentPlayer } = ctx;
 
-    const nextLocation = getNextLocation({hex, direction, hex_map});
-
-    G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
+    G.players_state[currentPlayer] = {...G.players_state[currentPlayer], hex, direction};
 
     events.endTurn();
 }
@@ -160,10 +168,15 @@ export const sobrevivenciaGame = {
                         }
                     }
                 },
-                onBegin: ({G, ctx, events}) => events.setActivePlayers({currentPlayer:'direction'}),
+                onBegin: ({G, ctx, events}) => {
+                    updatePlayersLocations({G});
+                    events.setActivePlayers({currentPlayer:'direction'});
+                },
             },
             next: 'main',
-            endIf: (({G}) => false) //TODO: add check if the player reached the finish tile
+            onBegin: (({G}) => {
+                G.start_locations = []
+            })
         }
     },
     endIf: (({G, ctx}) => ctx.phase != 'startLocationSelection' && 

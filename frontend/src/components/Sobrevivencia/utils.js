@@ -49,9 +49,14 @@ export function getHex(args) {
     }
 }
 
+export function hexEquals(hex_1, hex_2) {
+    if (hex_1 == null || hex_2 == null) return false;
+    return HexUtils.equals(parseHex(hex_1),parseHex(hex_2))
+}
+
 export function getTargetHexes(args) {
 
-    const {hex_map, hex, direction} = args;
+    const {hex_map, hex, direction, player_locations} = args;
 
     const dirs = direction == 0 ? [5,0,1] : direction == 5 ? [4,5,6] : [direction-1, direction, direction+1];
 
@@ -65,17 +70,20 @@ export function getTargetHexes(args) {
         });
 
         return {...dir_hex, direction: dir, way: index == 1 ? 'main' : index == 0 ? 'right' : 'left'}
-    }).filter(d => d.key).reverse();
+    }).filter(d => d.key && !player_locations.some(pl_hex => hexEquals(d, pl_hex))).reverse();
 }
 
-export function getNextLocation({hex_map, hex: hex_coordinates, direction}) {
+export function getNextLocation({hex: hex_coordinates, direction, G}) {
 
-    const hex = hex_map.find((map_hex) => HexUtils.equals(parseHex(hex_coordinates),parseHex(map_hex)));
+    const { hex_map, players_state } = G;
+    const player_locations = Object.values(players_state).map(({hex}) => hex)
+
+    const hex = hex_map.find((map_hex) => hexEquals(hex_coordinates,map_hex));
 
     const nextLocation = {
         direction,
         hex,
-        targetHexes: getTargetHexes({hex, direction, hex_map})
+        targetHexes: getTargetHexes({hex, direction, hex_map, player_locations})
     }
     return nextLocation;
 }

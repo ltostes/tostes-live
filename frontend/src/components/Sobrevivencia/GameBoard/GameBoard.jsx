@@ -66,7 +66,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
             G.start_locations.map((props, index) => {
               const {row, col, id, dir : direction} = props;
               return (
-                <CustomHexTile row={row} col={col} key={id} onClick={
+                <CustomHexTile row={row} col={col} key={`starting-${id}`} onClick={
                   () => {
                     moves.selectStartLocation({row, col, direction, index})
                   }
@@ -81,7 +81,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
             // End location flag
             G.end_locations.map(({row, col, id}) => {
               return (
-                <CustomHexTile row={row} col={col} key={id}
+                <CustomHexTile row={row} col={col} key={`finish-${id}`}
                 // style={{border: 1, stroke:'red'}} 
                 >
                   <FinishTile />
@@ -102,7 +102,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
                   r={r}
                   s={s}
                   style={{stroke: color}}
-                  key={playerId}
+                  key={`${playerId}-location`}
                 >
                   <PlayerTile style={{fill: color}}/>
                 </CustomHexTile>
@@ -119,10 +119,6 @@ function GameBoard({G, ctx, moves, reset, events}) {
                 confirmDirection={moves.confirmDirection}
               />
           }
-          {/* <CustomHexTile
-             row={4} col={10} 
-             style={{border: 1, stroke:'white'}} 
-          /> */}
         </HexMap>
       </div>
       {/* Footer */}
