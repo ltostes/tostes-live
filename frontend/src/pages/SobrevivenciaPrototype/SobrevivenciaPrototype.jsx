@@ -13,7 +13,7 @@ import MainMap from '../../components/Sobrevivencia/MainMap';
 import CardPortal from '../../components/Sobrevivencia/CardPortal';
 import DirectionControls from '../../components/Sobrevivencia/DirectionControls/DirectionControls';
 
-import { STARTING_LOCATIONS } from '../../components/Sobrevivencia/constants';
+import { LOCATIONS } from '../../components/Sobrevivencia/constants';
 import { CARD_DEFINITIONS } from '../../components/Sobrevivencia/cards';
 import PopupModal from '../../components/PopupModal/PopupModal';
 
@@ -110,7 +110,7 @@ function SobrevivenciaPrototype() {
             gameStarted={gameStarted}
             >
             {
-                !gameStarted && STARTING_LOCATIONS.map((loc) => startingLocation(loc))
+                !gameStarted && LOCATIONS.filter(f => f.type == 'start').map((loc) => startingLocation(loc))
             }
             {
                 gameStarted && <g hex={playerPos.hex}>
