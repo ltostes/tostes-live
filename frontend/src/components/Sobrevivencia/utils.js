@@ -65,5 +65,15 @@ export function getTargetHexes(args) {
         });
 
         return {...dir_hex, direction: dir, way: index == 1 ? 'main' : index == 0 ? 'right' : 'left'}
-    }).filter(d => d.key)
+    }).filter(d => d.key).reverse();
+}
+
+export function getNextLocation({hex_map, hex, direction}) {
+
+    const nextLocation = {
+        direction,
+        hex,
+        targetHexes: getTargetHexes({hex, direction, hex_map})
+    }
+    return nextLocation;
 }

@@ -1,14 +1,18 @@
 import React from 'react'
 import styles from './GameBoard.module.css'
+
 import { Flag } from 'react-feather';
 import { FaLongArrowAltDown } from "react-icons/fa";
+import { Hex, Path } from 'react-hexgrid';
+import { _ } from 'lodash';
 
 import HexMap from '../HexMap/HexMap'
 import { FinishTile, PlayerTile, StartLocation } from '../MapElements'
 
 import { CustomHexTile } from '../MapElements';
 import SimpleFlexTable from '../SimpleFlexTable';
-import { Hex, Path } from 'react-hexgrid';
+import CardPortal from '../CardPortal';
+import { CARD_DEFINITIONS } from '../cards';
 
 function GameBoard({G, ctx, moves, reset, events}) {
 
@@ -20,6 +24,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
     <div 
       className='flex flex-col justify-center h-lvh'
     >
+      {/* Header */}
       <div className='flex-1 bg-white flex flex-col justify-center items-center p-2 gap-2'>
         <div className='text-center p-2 text-4xl text-blue-500'>
           <h2 className='font-bold mb-2'>Protótipo digital <span className='transition hover:text-green-800 hover:animate-pulse' href="https://ludopedia.com.br/jogo/sobrevivencia-na-amazonia">Sobrevivência na Amazônia</span></h2>
@@ -32,6 +37,32 @@ function GameBoard({G, ctx, moves, reset, events}) {
             />
         </div>
       </div>
+      {
+        stage == 'card' && <CardPortal>
+          {
+            currentPlayerState.targetHexes.map(({key, q, r, s, direction, way}) => (
+              <div key={key}>
+              <div 
+                className={`position-relative bg-white/70 p-2 rounded-2xl translate-y-${way == 'main' ? '[-15px]' : '0.5'} hover:translate-y-${way == 'main' ? '[-20px]' : '0'} transition-all duration-300`}
+                onClick={() => moves.moveCurrentPlayer({hex: {q,r,s}, direction})}
+              >
+                <img 
+                  src={_.sample(CARD_DEFINITIONS.map(({location, filename}) => `${location}/${filename}`))}
+                  alt="Example" className='rounded-2xl h-150' />
+              </div>
+              <div className='flex justify-center'>
+                <FaLongArrowAltDown 
+                  transform={`rotate(${way == 'main' ? 180 : way == 'left' ? 180-30 : 180+30})`}
+                  size={60}
+                  style={{fill: way == 'main' ? currentPlayerState.color : 'white'}}
+                />
+              </div>
+              </div>
+            ))
+          }
+        </CardPortal>
+      }
+      {/* Map */}
       <div className='max-h-150 border-2 border-amber-100'>
         <HexMap 
           hex_map={G.hex_map}
@@ -85,6 +116,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
             })
           }
           {
+            // Direction hexes
             currentPlayerState.targetHexes.map(({key, q, r, s, direction, way},i) => (
               <CustomHexTile 
                   key={`direction-${key}`}
@@ -105,6 +137,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
           }
         </HexMap>
       </div>
+      {/* Footer */}
       <div className='flex-1 border-2 border-amber-300'>
         <h1>Goodbye!</h1>
       </div>

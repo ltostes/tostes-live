@@ -3,7 +3,7 @@ import { CARD_DEFINITIONS } from "./cards";
 
 import { _ } from 'lodash';
 
-import { getHex, getTargetHexes } from "./utils";
+import { getHex, getTargetHexes, getNextLocation } from "./utils";
 
 function playerSetup(index) {
     return {
@@ -22,11 +22,7 @@ function selectStartLocation({G, ctx, events}, args) {
 
     const nextHex = getHex({row, col, hex_map})
     
-    const nextLocation = {
-        direction: args.direction,
-        hex: nextHex,
-        targetHexes: getTargetHexes({hex: nextHex, direction, hex_map})
-    }
+    const nextLocation = getNextLocation({hex: nextHex, direction, hex_map})
 
     G.start_locations.splice(index,1);
     G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
@@ -46,15 +42,26 @@ function changeDirection({G, ctx}, clockwise=true) {
                             :   
                             currentDirection == 5 ? 0 : currentDirection + 1;
 
-    const nextLocation = {
-        direction: nextDirection,
-        hex: playerHex,
-        targetHexes: getTargetHexes({hex: playerHex, direction: nextDirection, hex_map})
-    }
+    const nextLocation = getNextLocation({hex: playerHex, direction: nextDirection, hex_map});
 
     G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
 }
 
+function confirmDirection({G, ctx, events}) {
+    events.endStage();
+}
+
+function moveCurrentPlayer({G, ctx, events}, {hex, direction}) {
+
+    const { hex_map } = G;
+    const { currentPlayer } = ctx;
+
+    const nextLocation = getNextLocation({hex, direction, hex_map});
+
+    G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
+
+    events.endTurn();
+}
 
 function setup({ctx, random}, setupData) {
 
@@ -105,11 +112,12 @@ export const sobrevivenciaGame = {
                         next: 'card',
                         moves: {
                             changeDirection,
-                            confirmDirection: (({events}) => events.endStage())
+                            confirmDirection
                         }
                     },
                     'card' : {
                         moves: {
+                            moveCurrentPlayer,
                             endCard: (({events}) => events.endTurn())
                         }
                     }
