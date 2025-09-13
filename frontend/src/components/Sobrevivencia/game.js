@@ -1,4 +1,4 @@
-import { HEX_MAP_LAYOUT, STARTING_LOCATIONS, PLAYER_COLORS } from "./constants"
+import { HEX_MAP_LAYOUT, LOCATIONS, PLAYER_COLORS } from "./constants"
 import { CARD_DEFINITIONS } from "./cards";
 
 import { _ } from 'lodash';
@@ -34,6 +34,27 @@ function selectStartLocation({G, ctx, events}, args) {
     events.endTurn();
 }
 
+function changeDirection({G, ctx}, clockwise=true) {
+
+    const { hex_map } = G;
+    const { currentPlayer } = ctx;
+
+    const { hex: playerHex, direction: currentDirection } = G.players_state[currentPlayer];
+
+    const nextDirection = clockwise ? 
+                            currentDirection == 0 ? 5 : currentDirection - 1
+                            :   
+                            currentDirection == 5 ? 0 : currentDirection + 1;
+
+    const nextLocation = {
+        direction: nextDirection,
+        hex: playerHex,
+        targetHexes: getTargetHexes({hex: playerHex, direction: nextDirection, hex_map})
+    }
+
+    G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
+}
+
 
 function setup({ctx, random}, setupData) {
 
@@ -43,7 +64,8 @@ function setup({ctx, random}, setupData) {
 
     const hex_map = base_hex_map;
 
-    const start_locations = STARTING_LOCATIONS;
+    const start_locations = LOCATIONS.filter(f => f.type == 'start');
+    const end_locations = LOCATIONS.filter(f => f.type == 'finish');
 
     const base_forest_deck = CARD_DEFINITIONS.filter(f => f.type == 'forest');
     const base_river_deck = CARD_DEFINITIONS.filter(f => f.type == 'river');
@@ -58,7 +80,8 @@ function setup({ctx, random}, setupData) {
         forest_deck,
         river_deck,
         players_state,
-        start_locations
+        start_locations,
+        end_locations
     }
 }
 
@@ -72,7 +95,29 @@ export const sobrevivenciaGame = {
             moves: {
                 selectStartLocation
             },
-            endIf: (({G}) => Object.values(G.players_state).every(({hex}) => hex != null))
+            endIf: (({G}) => Object.values(G.players_state).every(({hex}) => hex != null)),
+            next: 'main'
+        },
+        'main' : {
+            turn: {
+                stages: {
+                    'direction' : {
+                        next: 'card',
+                        moves: {
+                            changeDirection,
+                            confirmDirection: (({events}) => events.endStage())
+                        }
+                    },
+                    'card' : {
+                        moves: {
+                            endCard: (({events}) => events.endTurn())
+                        }
+                    }
+                },
+                onBegin: ({G, ctx, events}) => events.setActivePlayers({currentPlayer:'direction'}),
+            },
+            next: 'main',
+            endIf: (({G}) => false) //TODO: add check if the player reached the finish tile
         }
     }
 }

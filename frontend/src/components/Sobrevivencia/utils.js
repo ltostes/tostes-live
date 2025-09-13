@@ -57,11 +57,13 @@ export function getTargetHexes(args) {
 
     const mainHex = parseHex(hex);
     
-    return hex_map.filter(f => {
-        const thisHex = parseHex(f)
-        return dirs.some(dir => {
+    return dirs.map((dir,index) => {
+        const dir_hex = hex_map.find(th => {
+            const testHex = parseHex(th);
             const dirHex = HexUtils.add(mainHex, HexUtils.direction(dir));
-            return HexUtils.equals(thisHex, dirHex);
-        })
-    })
+            return HexUtils.equals(testHex, dirHex);
+        });
+
+        return {...dir_hex, direction: dir, way: index == 1 ? 'main' : index == 0 ? 'right' : 'left'}
+    }).filter(d => d.key)
 }

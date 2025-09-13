@@ -1,32 +1,44 @@
 import React from 'react'
 import styles from './GameBoard.module.css'
 import { Flag } from 'react-feather';
+import { FaLongArrowAltDown } from "react-icons/fa";
 
 import HexMap from '../HexMap/HexMap'
 import { FinishTile, PlayerTile, StartLocation } from '../MapElements'
 
 import { CustomHexTile } from '../MapElements';
+import SimpleFlexTable from '../SimpleFlexTable';
+import { Hex, Path } from 'react-hexgrid';
 
-function GameBoard({G, ctx, moves, reset}) {
+function GameBoard({G, ctx, moves, reset, events}) {
+
+  const stage = !ctx.activePlayers ? null : ctx.activePlayers[ctx.currentPlayer];
+  const { currentPlayer, phase, turn, numPlayers } = ctx;
+  const currentPlayerState = G.players_state[currentPlayer];
 
   return (
     <div 
       className='flex flex-col justify-center h-lvh'
     >
-      <div className='flex-1 border-2 border-amber-300'>
-        <h1>Hello!</h1>
+      <div className='flex-1 bg-white flex flex-col justify-center items-center p-2 gap-2'>
+        <div className='text-center p-2 text-4xl text-blue-500'>
+          <h2 className='font-bold mb-2'>Protótipo digital <span className='transition hover:text-green-800 hover:animate-pulse' href="https://ludopedia.com.br/jogo/sobrevivencia-na-amazonia">Sobrevivência na Amazônia</span></h2>
+          {/* <p className='text-sm'>Escolha a direção do personagem para poder se mover e selecione o melhor caminho até encontrar o resgate.</p> */}
+        </div>
+        <div className='text-green-800'>
+          <SimpleFlexTable items={{phase, stage, turn, currentPlayer
+            , currentPlayerState
+          }} 
+            />
+        </div>
       </div>
       <div className='max-h-150 border-2 border-amber-100'>
         <HexMap 
           hex_map={G.hex_map}
           controls={{ translation: { x: 0, y: 0 }, zoom: 1 }} // To be turned into states later
         >
-          <CustomHexTile
-            row={4} col={10}
-          >
-            <FinishTile/>
-          </CustomHexTile>
           {
+            // When it is the Start Location Phase
             ctx.phase == 'startLocationSelection' &&
             G.start_locations.map((props, index) => {
               const {row, col, id, dir : direction} = props;
@@ -43,9 +55,19 @@ function GameBoard({G, ctx, moves, reset}) {
             )
           }
           {
-            // Player tokens
+            // End location flag
+            G.end_locations.map(({row, col, id}) => {
+              return (
+                <CustomHexTile row={row} col={col} key={id}>
+                  <FinishTile />
+                </CustomHexTile>
+              )
+            }
+            )
+          }
+          {
+            // Player tiles
             Object.entries(G.players_state).map(([playerId, playerState]) => {
-              console.log({playerId, playerState});
               if (playerState.hex == null) return;
               const {hex, color} = playerState;
               const {q, r, s} = hex;
@@ -55,12 +77,31 @@ function GameBoard({G, ctx, moves, reset}) {
                   r={r}
                   s={s}
                   style={{stroke: color}}
+                  key={playerId}
                 >
                   <PlayerTile style={{fill: color}}/>
                 </CustomHexTile>
               )
             })
-              
+          }
+          {
+            currentPlayerState.targetHexes.map(({key, q, r, s, direction, way},i) => (
+              <CustomHexTile 
+                  key={`direction-${key}`}
+                  q={q}
+                  r={r}
+                  s={s}
+                  style={{stroke: 'white', strokeWidth: 1}}
+              >
+                {
+                  <FaLongArrowAltDown 
+                    transform={`translate(-6,0) rotate(${-90 -direction*60},6,0) translate(0,-6)`}
+                    size={12} // If you were to change this size, also change the fixed '6' in transforms (should be 1/2 the size)
+                    style={{fill: way == 'main' ? currentPlayerState.color : 'white', opacity: 0.5}}
+                  />
+                }
+              </CustomHexTile>
+            ))
           }
         </HexMap>
       </div>
