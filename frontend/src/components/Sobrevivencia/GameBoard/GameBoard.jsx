@@ -6,19 +6,30 @@ import { FaLongArrowAltDown } from "react-icons/fa";
 import { Hex, Path } from 'react-hexgrid';
 import { _ } from 'lodash';
 
+import useKeyDown from '../../../hooks/useKeyDown';
+import SimpleFlexTable from '../SimpleFlexTable';
+
 import HexMap from '../HexMap/HexMap'
 import { FinishTile, PlayerTile, StartLocation } from '../MapElements'
-
 import { CustomHexTile } from '../MapElements';
-import SimpleFlexTable from '../SimpleFlexTable';
+
 import CardPortal from '../CardPortal';
 import { CARD_DEFINITIONS } from '../cards';
+import CardChoiceMenu from '../CardChoiceMenu/CardChoiceMenu';
 
 function GameBoard({G, ctx, moves, reset, events}) {
 
   const stage = !ctx.activePlayers ? null : ctx.activePlayers[ctx.currentPlayer];
   const { currentPlayer, phase, turn, numPlayers } = ctx;
+  const { forest_deck, river_deck } = G;
   const currentPlayerState = G.players_state[currentPlayer];
+  const { cardsToChoose, color: playerColor } = currentPlayerState;
+
+  function chooseCard(chosen_way) {
+    const {q, r, s, direction} = currentPlayerState.targetHexes.find(({way}) => chosen_way == way);
+    moves.moveCurrentPlayer({hex: {q,r,s}, direction});
+    return;
+  }
 
   return (
     <div 
@@ -31,36 +42,20 @@ function GameBoard({G, ctx, moves, reset, events}) {
           {/* <p className='text-sm'>Escolha a direção do personagem para poder se mover e selecione o melhor caminho até encontrar o resgate.</p> */}
         </div>
         <div className='text-green-800'>
-          <SimpleFlexTable items={{phase, stage, turn, currentPlayer
-            , currentPlayerState
+          <SimpleFlexTable items={{
+            phase, stage, turn, currentPlayer
+            // , currentPlayerState
+            , deck_lengths: {forest: forest_deck.length, river: river_deck.length }
           }} 
             />
         </div>
       </div>
       {
-        stage == 'card' && <CardPortal>
-          {
-            currentPlayerState.targetHexes.map(({key, q, r, s, direction, way}) => (
-              <div key={key}>
-              <div 
-                className={`position-relative bg-white/70 p-2 rounded-2xl translate-y-${way == 'main' ? '[-15px]' : '0.5'} hover:translate-y-${way == 'main' ? '[-20px]' : '0'} transition-all duration-300`}
-                onClick={() => moves.moveCurrentPlayer({hex: {q,r,s}, direction})}
-              >
-                <img 
-                  src={_.sample(CARD_DEFINITIONS.map(({location, filename}) => `${location}/${filename}`))}
-                  alt="Example" className='rounded-2xl h-150' />
-              </div>
-              <div className='flex justify-center'>
-                <FaLongArrowAltDown 
-                  transform={`rotate(${way == 'main' ? 180 : way == 'left' ? 180-30 : 180+30})`}
-                  size={60}
-                  style={{fill: way == 'main' ? currentPlayerState.color : 'white'}}
+        stage == 'card' && <CardChoiceMenu 
+                cards={cardsToChoose}
+                chooseCard={chooseCard}
+                playerColor={playerColor}
                 />
-              </div>
-              </div>
-            ))
-          }
-        </CardPortal>
       }
       {/* Map */}
       <div className='max-h-150 border-2 border-amber-100'>

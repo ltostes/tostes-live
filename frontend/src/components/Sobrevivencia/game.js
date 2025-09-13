@@ -1,7 +1,7 @@
 import { HEX_MAP_LAYOUT, LOCATIONS, PLAYER_COLORS } from "./constants"
 import { CARD_DEFINITIONS } from "./cards";
 
-import { _ } from 'lodash';
+import { _, forEach } from 'lodash';
 
 import { getHex, getTargetHexes, getNextLocation } from "./utils";
 
@@ -10,8 +10,16 @@ function playerSetup(index) {
         direction: null,
         hex: null,
         targetHexes: [],
-        color: PLAYER_COLORS[index]
+        color: PLAYER_COLORS[index],
+        cardsToChoose: []
     }
+}
+
+function getFreshDeck(deck_type, shuffler=_.shuffle) {
+
+    const base_deck = CARD_DEFINITIONS.filter(f => f.type == deck_type);
+
+    return shuffler(base_deck)
 }
 
 function selectStartLocation({G, ctx, events}, args) {
@@ -47,7 +55,35 @@ function changeDirection({G, ctx}, clockwise=true) {
     G.players_state[currentPlayer] = {...G.players_state[currentPlayer], ...nextLocation};
 }
 
-function confirmDirection({G, ctx, events}) {
+function confirmDirection({G, ctx, events, random}) {
+    // Here we need to update the cardsToChoose of the player
+    const { targetHexes } = G.players_state[ctx.currentPlayer];
+
+    G.players_state[ctx.currentPlayer].cardsToChoose = [];
+
+    targetHexes.forEach(({type, way}) => {
+        let cardToAdd;
+        if (type == 'land') {
+            if (G.forest_deck.length > 0) {
+                cardToAdd = G.forest_deck.pop()        
+            } else {
+                const freshForestDeck = getFreshDeck('forest', random.Shuffle);
+                cardToAdd = freshForestDeck.pop();
+                G.forest_deck = freshForestDeck;
+            }
+        } else if (type == 'water') {
+            if (G.river_deck.length > 0) {
+                cardToAdd = G.river_deck.pop();      
+            } else {
+                const freshRiverDeck = getFreshDeck('river', random.Shuffle);
+                cardToAdd = freshRiverDeck.pop();
+                G.river_deck = freshRiverDeck;
+            }
+        }
+
+        G.players_state[ctx.currentPlayer].cardsToChoose.push({...cardToAdd, way});
+    })
+
     events.endStage();
 }
 
@@ -74,11 +110,8 @@ function setup({ctx, random}, setupData) {
     const start_locations = LOCATIONS.filter(f => f.type == 'start');
     const end_locations = LOCATIONS.filter(f => f.type == 'finish');
 
-    const base_forest_deck = CARD_DEFINITIONS.filter(f => f.type == 'forest');
-    const base_river_deck = CARD_DEFINITIONS.filter(f => f.type == 'river');
-
-    const forest_deck = random.Shuffle(base_forest_deck)
-    const river_deck = random.Shuffle(base_river_deck)
+    const forest_deck = getFreshDeck('forest', random.Shuffle)
+    const river_deck = getFreshDeck('river', random.Shuffle)
 
     const players_state = Object.assign({},..._.times(ctx.numPlayers).map((player, index) => ({[player]: playerSetup(index)})));
 
