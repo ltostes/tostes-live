@@ -1,29 +1,25 @@
 import React from 'react'
 import styles from './GameBoard.module.css'
 
-import { Flag } from 'react-feather';
 import { FaLongArrowAltDown } from "react-icons/fa";
-import { Hex, Path } from 'react-hexgrid';
 import { _ } from 'lodash';
 
-import useKeyDown from '../../../hooks/useKeyDown';
 import SimpleFlexTable from '../SimpleFlexTable';
 
 import HexMap from '../HexMap/HexMap'
 import { FinishTile, PlayerTile, StartLocation } from '../MapElements'
 import { CustomHexTile } from '../MapElements';
 
-import CardPortal from '../CardPortal';
-import { CARD_DEFINITIONS } from '../cards';
 import CardChoiceMenu from '../CardChoiceMenu/CardChoiceMenu';
+import DirectionTiles from '../DirectionTiles';
 
 function GameBoard({G, ctx, moves, reset, events}) {
 
   const stage = !ctx.activePlayers ? null : ctx.activePlayers[ctx.currentPlayer];
-  const { currentPlayer, phase, turn, numPlayers } = ctx;
+  const { currentPlayer, phase, turn, numPlayers, gameover } = ctx;
   const { forest_deck, river_deck } = G;
   const currentPlayerState = G.players_state[currentPlayer];
-  const { cardsToChoose, color: playerColor } = currentPlayerState;
+  const { cardsToChoose, color: playerColor, targetHexes } = currentPlayerState;
 
   function chooseCard(chosen_way) {
     const {q, r, s, direction} = currentPlayerState.targetHexes.find(({way}) => chosen_way == way);
@@ -46,12 +42,13 @@ function GameBoard({G, ctx, moves, reset, events}) {
             phase, stage, turn, currentPlayer
             // , currentPlayerState
             , deck_lengths: {forest: forest_deck.length, river: river_deck.length }
+            , playerHex: currentPlayerState.hex
           }} 
             />
         </div>
       </div>
       {
-        stage == 'card' && <CardChoiceMenu 
+        stage == 'card' && !gameover && <CardChoiceMenu 
                 cards={cardsToChoose}
                 chooseCard={chooseCard}
                 playerColor={playerColor}
@@ -84,7 +81,9 @@ function GameBoard({G, ctx, moves, reset, events}) {
             // End location flag
             G.end_locations.map(({row, col, id}) => {
               return (
-                <CustomHexTile row={row} col={col} key={id}>
+                <CustomHexTile row={row} col={col} key={id}
+                // style={{border: 1, stroke:'red'}} 
+                >
                   <FinishTile />
                 </CustomHexTile>
               )
@@ -112,24 +111,18 @@ function GameBoard({G, ctx, moves, reset, events}) {
           }
           {
             // Direction hexes
-            currentPlayerState.targetHexes.map(({key, q, r, s, direction, way},i) => (
-              <CustomHexTile 
-                  key={`direction-${key}`}
-                  q={q}
-                  r={r}
-                  s={s}
-                  style={{stroke: 'white', strokeWidth: 1}}
-              >
-                {
-                  <FaLongArrowAltDown 
-                    transform={`translate(-6,0) rotate(${-90 -direction*60},6,0) translate(0,-6)`}
-                    size={12} // If you were to change this size, also change the fixed '6' in transforms (should be 1/2 the size)
-                    style={{fill: way == 'main' ? currentPlayerState.color : 'white', opacity: 0.5}}
-                  />
-                }
-              </CustomHexTile>
-            ))
+            stage == 'direction' && 
+            <DirectionTiles 
+                targetHexes={targetHexes}
+                playerColor={playerColor}
+                changeDirection={moves.changeDirection}
+                confirmDirection={moves.confirmDirection}
+              />
           }
+          {/* <CustomHexTile
+             row={4} col={10} 
+             style={{border: 1, stroke:'white'}} 
+          /> */}
         </HexMap>
       </div>
       {/* Footer */}

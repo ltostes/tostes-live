@@ -68,7 +68,9 @@ export function getTargetHexes(args) {
     }).filter(d => d.key).reverse();
 }
 
-export function getNextLocation({hex_map, hex, direction}) {
+export function getNextLocation({hex_map, hex: hex_coordinates, direction}) {
+
+    const hex = hex_map.find((map_hex) => HexUtils.equals(parseHex(hex_coordinates),parseHex(map_hex)));
 
     const nextLocation = {
         direction,

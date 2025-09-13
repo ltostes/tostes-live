@@ -3,7 +3,7 @@ import { CARD_DEFINITIONS } from "./cards";
 
 import { _, forEach } from 'lodash';
 
-import { getHex, getTargetHexes, getNextLocation } from "./utils";
+import { getHex, getTargetHexes, getNextLocation, translateRowColToGRS } from "./utils";
 
 function playerSetup(index) {
     return {
@@ -107,8 +107,13 @@ function setup({ctx, random}, setupData) {
 
     const hex_map = base_hex_map;
 
-    const start_locations = LOCATIONS.filter(f => f.type == 'start');
-    const end_locations = LOCATIONS.filter(f => f.type == 'finish');
+    const hex_locations = LOCATIONS.map((location) => ({
+        ...location,
+        ...translateRowColToGRS(location.row, location.col)
+    }))
+
+    const start_locations = hex_locations.filter(f => f.type == 'start')
+    const end_locations = hex_locations.filter(f => f.type == 'finish');
 
     const forest_deck = getFreshDeck('forest', random.Shuffle)
     const river_deck = getFreshDeck('river', random.Shuffle)
@@ -160,5 +165,11 @@ export const sobrevivenciaGame = {
             next: 'main',
             endIf: (({G}) => false) //TODO: add check if the player reached the finish tile
         }
-    }
+    },
+    endIf: (({G, ctx}) => ctx.phase != 'startLocationSelection' && 
+        Object.values(G.players_state)
+            .some(({hex: {q,r,s}}) => G.end_locations
+            .some(({q: end_q, r: end_r, s: end_s}) => 
+                _.isEqual([q,r,s], [end_q,end_r,end_s])
+    ))),
 }

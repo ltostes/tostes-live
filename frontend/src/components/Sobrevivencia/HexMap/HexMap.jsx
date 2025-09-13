@@ -47,7 +47,7 @@ function HexMap({ hex_map, controls, children}) {
           })}      
           {
             // All children must be CustomTile (to be fit within a hexagon)
-            children.flat().filter(child => (React.isValidElement(child) && child.type === CustomHexTile))
+            children.flat()//.filter(child => (React.isValidElement(child) && child.type === CustomHexTile))
           }
           </Layout>
       </HexGrid>);
