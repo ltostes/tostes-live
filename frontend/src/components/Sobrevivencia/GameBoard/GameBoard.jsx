@@ -37,14 +37,15 @@ function GameBoard({G, ctx, moves, reset, events}) {
           <h2 className='font-bold mb-2'>Protótipo digital <span className='transition hover:text-green-800 hover:animate-pulse' href="https://ludopedia.com.br/jogo/sobrevivencia-na-amazonia">Sobrevivência na Amazônia</span></h2>
           {/* <p className='text-sm'>Escolha a direção do personagem para poder se mover e selecione o melhor caminho até encontrar o resgate.</p> */}
         </div>
-        <div className='text-green-800'>
-          <SimpleFlexTable items={{
+        <div className='text-center p-2 text-md text-blue-500'>
+            <p>Após selecionar o local inical dos dois jogadores, o jogo funciona atualmente com hotkeys, listados embaixo </p>
+          {/* <SimpleFlexTable items={{
             phase, stage, turn, currentPlayer
             // , currentPlayerState
             , deck_lengths: {forest: forest_deck.length, river: river_deck.length }
             , playerHex: currentPlayerState.hex
           }} 
-            />
+            /> */}
         </div>
       </div>
       {
@@ -55,7 +56,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
                 />
       }
       {/* Map */}
-      <div className='max-h-150 border-2 border-amber-100'>
+      <div className='max-h-150 border-2 bg-white'>
         <HexMap 
           hex_map={G.hex_map}
           controls={{ translation: { x: 0, y: 0 }, zoom: 1 }} // To be turned into states later
@@ -122,8 +123,35 @@ function GameBoard({G, ctx, moves, reset, events}) {
         </HexMap>
       </div>
       {/* Footer */}
-      <div className='flex-1 border-2 border-amber-300'>
-        <h1>Goodbye!</h1>
+      <div className='flex-2 bg-white flex justify-center items-center p-5 gap-20 max-h-[15%] border-amber-400'>
+        <div className='flex flex-col gap-2'>
+          <div className='text-green-800 font-bold self-center'>
+            Hotkeys de direção
+          </div>
+          <div className='text-gray-800'>
+            <kbd>Q</kbd>: Rotacionar direção (anti-horário)
+          </div>
+          <div className='text-gray-800'>
+            <kbd>W</kbd>: Confirmar direção
+          </div>
+          <div className='text-gray-800'>
+            <kbd>E</kbd>: Rotacionar direção (horário)
+          </div>
+        </div>
+        <div className='flex flex-col gap-2 mb-5'>
+          <div className='text-green-800 font-bold self-center'>
+            Escolha da carta
+          </div>
+          <div className='text-gray-800'>
+            <kbd>Q</kbd>: Carta da esquerda
+          </div>
+          <div className='text-gray-800'>
+            <kbd>W</kbd>: Carta do meio (principal)
+          </div>
+          <div className='text-gray-800'>
+            <kbd>E</kbd>: Carta da direita
+          </div>
+        </div>
       </div>
     </div>
   )
