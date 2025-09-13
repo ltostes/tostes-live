@@ -13,8 +13,8 @@ import MainMap from '../../components/Sobrevivencia/MainMap';
 import CardPortal from '../../components/Sobrevivencia/CardPortal';
 import DirectionControls from '../../components/Sobrevivencia/DirectionControls/DirectionControls';
 
-
-import { STARTING_LOCATIONS } from './constants';
+import { STARTING_LOCATIONS } from '../../components/Sobrevivencia/constants';
+import { CARD_DEFINITIONS } from '../../components/Sobrevivencia/cards';
 import PopupModal from '../../components/PopupModal/PopupModal';
 
 function SobrevivenciaPrototype() {
@@ -65,7 +65,7 @@ function SobrevivenciaPrototype() {
   function RandomCard() {
     return (
       <img 
-        src={`/assets/cards/${d3.format("03d")(_.sample(_.range(0,58)))}.webp`}
+        src={_.sample(CARD_DEFINITIONS.map(({location, filename}) => `${location}/${filename}`))}
         alt="Example" className='rounded-2xl h-150' />
     )
   }
