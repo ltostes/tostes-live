@@ -8,9 +8,9 @@ import useKeyDown from '../../../hooks/useKeyDown';
 
 function CardChoiceMenu({cards, chooseCard, playerColor}) {
 
-  useKeyDown(() => chooseCard('left'), 'KeyQ');
-  useKeyDown(() => chooseCard('main'), 'KeyW');
-  useKeyDown(() => chooseCard('right'), 'KeyE');
+  useKeyDown(() => cards.find(({way}) => way == 'left') && chooseCard('left'), 'KeyQ');
+  useKeyDown(() => cards.find(({way}) => way == 'main') && chooseCard('main'), 'KeyW');
+  useKeyDown(() => cards.find(({way}) => way == 'right') && chooseCard('right'), 'KeyE');
 
   return <CardPortal>
           {
