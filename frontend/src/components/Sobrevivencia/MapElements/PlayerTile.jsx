@@ -1,12 +1,41 @@
-import { Flag } from "react-feather"
-import { Hex, Hexagon } from "react-hexgrid";
-import { GiPikeman } from "react-icons/gi";
+import Exploradora from '../../../assets/exploradora.svg?react';
+import Explorador from '../../../assets/explorador.svg?react';
 
-export function PlayerTile(props) {
+const ExploradoraIcon = ({ size, color }) => (
+  <Exploradora 
+    transform={`translate(${-size/2},${-size/2})`}
+    width={size} 
+    height={size} 
+    fill={color} 
+  />
+);
+
+const ExploradorIcon = ({ size, color }) => (
+  <Explorador 
+    transform={`translate(${-size/2},${-size/2})`}
+    width={size} 
+    height={size} 
+    fill={color} 
+  />
+);
+
+export function PlayerTile({style, isFemale}) {
+    const size = 18
+
+    if (isFemale) {
+        return (
+            <ExploradoraIcon 
+            size={size} 
+            color={style.fill}
+            />
+        )
+    }
     return (
-        <GiPikeman size={12} 
-            x={-5.5} y={-6}
-            {...props}
-        />
+        <ExploradorIcon 
+        size={size} 
+        color={style.fill}
+    />
     )
+    
+        
 }

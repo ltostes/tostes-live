@@ -105,7 +105,7 @@ function GameBoard({G, ctx, moves, reset, events}) {
                   style={{stroke: color}}
                   key={`${playerId}-location`}
                 >
-                  <PlayerTile style={{fill: color}}/>
+                  <PlayerTile style={{fill: color}} isFemale={playerState.isFemale}/>
                 </CustomHexTile>
               )
             })
