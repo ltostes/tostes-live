@@ -5,13 +5,14 @@ import { _, forEach } from 'lodash';
 
 import { getHex, getTargetHexes, getNextLocation, translateRowColToGRS } from "./utils";
 
-function playerSetup(index) {
+function playerSetup(index, random) {
     return {
         direction: null,
         hex: null,
         targetHexes: [],
         color: PLAYER_COLORS[index],
-        cardsToChoose: []
+        cardsToChoose: [],
+        isFemale: random.Number() > 0.5
     }
 }
 
@@ -126,7 +127,7 @@ function setup({ctx, random}, setupData) {
     const forest_deck = getFreshDeck('forest', random.Shuffle)
     const river_deck = getFreshDeck('river', random.Shuffle)
 
-    const players_state = Object.assign({},..._.times(ctx.numPlayers).map((player, index) => ({[player]: playerSetup(index)})));
+    const players_state = Object.assign({},..._.times(ctx.numPlayers).map((player, index) => ({[player]: playerSetup(index, random)})));
 
     return {
         hex_map,

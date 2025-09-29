@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
-import svgrPlugin from 'vite-plugin-svgr';
+import svgr from 'vite-plugin-svgr';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), svgrPlugin()],
+  plugins: [
+    svgr(),
+    react(), 
+    tailwindcss(), 
+  ],
   build: {
     outDir: 'build', // Set output directory to "build"
   },
