@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@observablehq/notebook-kit": "^1.4.1"
+  },
+  "scripts": {
+    "docs:preview": "notebooks preview --root docs",
+    "docs:build": "notebooks build --root docs -- docs/*.html",
+    "docs:deploy" : "aws s3 sync docs/.observable/dist/ s3://tostes-live-bucket/notebooks/ --delete && aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\""
+  }
+}
