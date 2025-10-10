@@ -4,30 +4,10 @@
   <script id="1" type="text/markdown">
     # The first [notebook](https://observablehq.com/) of tostes.live!
   </script>
-  <script id="2" type="module" pinned="">
-    1 + 2 + 3
+  <script id="10" type="text/x-typescript" pinned="">
+    profiles.map(p => ({...p, json: JSON.parse(p.raw_json)}))
   </script>
-  <script id="3" type="text/markdown">
-    And another cell!
-  </script>
-  <script id="5" type="application/vnd.node.javascript" pinned="" output="cs2matches" format="json">
-    import { readFile } from 'fs/promises';
-    import JSZip from "jszip";
-
-    const zipFilePath = './.observable/data/cs2teamdedication.zip';
-
-    const matches = 'profiles_matches.json';
-
-    async function getMatchesData() {
-      const data = await readFile(zipFilePath);
-      const zip = await JSZip.loadAsync(data);
-      const matches_json_raw = await zip.files[matches].async("string");
-
-      return matches_json_raw;
-    }
-
-    process.stdout.write(
-      await getMatchesData()
-    );
+  <script id="7" type="application/sql" pinned="" database="cs2teamdedication" output="profiles">
+    select * from profiles
   </script>
 </notebook>
