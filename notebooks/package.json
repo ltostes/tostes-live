@@ -1,10 +1,16 @@
 {
+  "type": "module",
   "dependencies": {
-    "@observablehq/notebook-kit": "^1.4.1"
+    "@observablehq/notebook-kit": "^1.4.1",
+    "d3": "^7.9.0",
+    "dotenv": "^17.2.3",
+    "duckdb": "^1.4.1",
+    "jszip": "^3.10.1",
+    "node-fetch": "^3.3.2"
   },
   "scripts": {
-    "docs:preview": "notebooks preview --root docs",
-    "docs:build": "notebooks build --root docs -- docs/*.html",
-    "docs:deploy" : "aws s3 sync docs/.observable/dist/ s3://tostes-live-bucket/notebooks/ --delete && aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\""
+    "docs:preview": "notebooks preview",
+    "docs:build": "notebooks build -- *.html",
+    "docs:deploy": "aws s3 sync .observable/dist/ s3://tostes-live-bucket/notebooks/ --delete && aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\""
   }
 }
