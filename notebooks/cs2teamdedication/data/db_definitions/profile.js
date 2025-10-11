@@ -1,19 +1,6 @@
-import { PROFILE_LIST, MULTI_PROFILES, dateRounding, gameSort } from '../constants.js';
+import { PROFILE_LIST } from '../constants.js';
 
 export const PROFILES_TABLENAME = 'profiles';
-
-// // Pruning profiles dataframe
-// const profilesBaseDF = profiles
-//                         .filter(profile => !Object.keys(MULTI_PROFILES).includes(profile.meta.name))
-//                         .map(profile => ({
-//                             name: profile.meta.name ?? PROFILE_LIST.find(f => f.id == profile.meta.steam64Id).altname,
-//                             id: profile.meta.steam64Id,
-//                             avatar: profile.meta.steamAvatarUrl,
-//                             recentRatings: profile.recentGameRatings,
-//                             personalBestsCS2: profile.personalBestsCs2,
-//                             games: profile.games.map(g => g.gameId),
-//                             ...profile
-//                         }))
 
 export const PROFILES_SCHEMA_FIELDS = [
     {
@@ -48,7 +35,12 @@ export const PROFILES_SCHEMA_FIELDS = [
         ac_fun: (profile) => JSON.stringify(profile.personalBestsCs2),
     },
     {
-        name: "games",
+        name: "isLeetifyUser",
+        type: "BOOL",
+        ac_fun: (profile) => profile.personalBestsCs2 != null,
+    },
+    {
+        name: "matches",
         type: "TEXT[]",
         ac_fun: (profile) => JSON.stringify(profile.games.map(g => g.gameId)),
     },
@@ -76,7 +68,7 @@ export const PROFILES_INSERT_SQL_STATEMENT = (
 
 export const PROFILES_INSERT_BIND_FUN = (profile) => Object.assign({},...PROFILES_SCHEMA_FIELDS.map(({name, ac_fun}) => ({[name]: ac_fun(profile)})));
 
-// // This testing part of the script must be run in notebooks root
+// // This testing part of the script must be uncommented and run in notebooks root
 
 // import { readFile } from 'fs/promises';
 
