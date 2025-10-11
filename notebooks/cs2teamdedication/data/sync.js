@@ -19,34 +19,34 @@ async function main() {
     ////
 
     // Fetching profiles data
-    // let profiles = [];
-    // try {
-    //     // Collecting profile info
-    //     profiles = await fetchProfiles(PROFILE_LIST.map(p => p.id));
-    // } catch (error) {
-    //     console.error('Error fetching profiles:', error);
-    // }
+    let profiles = [];
+    try {
+        // Collecting profile info
+        profiles = await fetchProfiles(PROFILE_LIST.map(p => p.id));
+    } catch (error) {
+        console.error('Error fetching profiles:', error);
+    }
 
-    // //// Updating profiles in db
-    // // Recreating table
-    // try {
-    //     await conn.run(PROFILES_CREATETABLE_SQL_STATEMENT);
-    // } catch (error) {
-    //     console.error('Error creating profiles table');
-    // }
+    //// Updating profiles in db
+    // Recreating table
+    try {
+        await conn.run(PROFILES_CREATETABLE_SQL_STATEMENT);
+    } catch (error) {
+        console.error('Error creating profiles table', error);
+    }
                                     
-    // // Populating profile rows
-    // try {
-    //     const stmt = await conn.prepare(PROFILES_INSERT_SQL_STATEMENT);
-    //     for (const profile of profiles) {
-    //         const profileFieldBinds = PROFILES_INSERT_BIND_FUN(profile);
-    //         stmt.bind(profileFieldBinds);
-    //         const status = await stmt.run();
-    //         console.log("Inserted profile row:", profileFieldBinds.profile_id);
-    //     }
-    // } catch (error) {
-    //     console.error('Error inserting rows to table: ', error)
-    // }
+    // Populating profile rows
+    try {
+        const stmt = await conn.prepare(PROFILES_INSERT_SQL_STATEMENT);
+        for (const profile of profiles) {
+            const profileFieldBinds = PROFILES_INSERT_BIND_FUN(profile);
+            stmt.bind(profileFieldBinds);
+            const status = await stmt.run();
+            console.log("Inserted profile row:", profileFieldBinds.profile_id);
+        }
+    } catch (error) {
+        console.error('Error inserting rows to table: ', error)
+    }
 
     // Retrieving all matches played from profiles (we'll get the diff from DB and retrieve them online)
     let allPlayedMatches = [];
@@ -55,7 +55,7 @@ async function main() {
         const rows = await result.getRows();
         allPlayedMatches = rows.map(r => r[0]);
     } catch (error) {
-        console.error('Error retrieving ids for matches to retrieve');
+        console.error('Error retrieving ids for matches to retrieve', error);
     }
     // console.log({allPlayedMatches});
 
@@ -66,7 +66,7 @@ async function main() {
     try {
         await conn.run(MATCHES_CREATETABLE_SQL_STATEMENT);
     } catch (error) {
-        console.error('Error creating matches table');
+        console.error('Error creating matches table', error);
     }
 
     // Updating table schema (if changed)
@@ -111,45 +111,45 @@ async function main() {
         console.error('Error updating matches table schema', error);
     }
 
-    // // Retrieving saved matches
-    // let savedMatchIds = [];
-    // try {
-    //     const result = await conn.run('SELECT distinct match_id FROM matches');
-    //     const rows = await result.getRows();
-    //     savedMatchIds = rows.map(r => r[0]);
-    // } catch (error) {
-    //     console.error('Error retrieving saved matches ids');
-    // }
-    // // console.log({savedMatchIds});
+    // Retrieving saved matches
+    let savedMatchIds = [];
+    try {
+        const result = await conn.run('SELECT distinct match_id FROM matches');
+        const rows = await result.getRows();
+        savedMatchIds = rows.map(r => r[0]);
+    } catch (error) {
+        console.error('Error retrieving saved matches ids', error);
+    }
+    // console.log({savedMatchIds});
 
-    // // Calculating the matches we have yet to retrieve
-    // const matchesToRetrieve = allPlayedMatches
-    //                                 .filter(f => !savedMatchIds.includes(f))
-    //                                 // .slice(0,10)
-    // // console.log({matchesToRetrieve});
+    // Calculating the matches we have yet to retrieve
+    const matchesToRetrieve = allPlayedMatches
+                                    .filter(f => !savedMatchIds.includes(f))
+                                    // .slice(0,10)
+    // console.log({matchesToRetrieve});
 
-    // // Fetching matches
-    // let retrievedMatches = [];
-    // try {
-    //     // Collecting profile info
-    //     retrievedMatches = await fetchMatches(matchesToRetrieve);
-    // } catch (error) {
-    //     console.error('Error fetching matches:', error);
-    // }
-    // // console.log({retrievedMatches})
+    // Fetching matches
+    let retrievedMatches = [];
+    try {
+        // Collecting profile info
+        retrievedMatches = await fetchMatches(matchesToRetrieve);
+    } catch (error) {
+        console.error('Error fetching matches:', error);
+    }
+    // console.log({retrievedMatches})
 
-    // // Inserting new match rows into DB
-    // try {
-    //     const stmt = await conn.prepare(MATCHES_INSERT_SQL_STATEMENT);
-    //     for (const match of retrievedMatches) {
-    //         const matchFieldBinds = MATCHES_INSERT_BIND_FUN(match);
-    //         stmt.bind(matchFieldBinds);
-    //         const status = await stmt.run();
-    //         console.log("Inserted match row:", matchFieldBinds.match_id);
-    //     }
-    // } catch (error) {
-    //     console.error('Error inserting match rows to table: ', error)
-    // }
+    // Inserting new match rows into DB
+    try {
+        const stmt = await conn.prepare(MATCHES_INSERT_SQL_STATEMENT);
+        for (const match of retrievedMatches) {
+            const matchFieldBinds = MATCHES_INSERT_BIND_FUN(match);
+            stmt.bind(matchFieldBinds);
+            const status = await stmt.run();
+            console.log("Inserted match row:", matchFieldBinds.match_id);
+        }
+    } catch (error) {
+        console.error('Error inserting match rows to table: ', error)
+    }
 
     conn.closeSync();
 }

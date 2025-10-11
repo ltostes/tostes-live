@@ -4,10 +4,14 @@
   <script id="1" type="text/markdown">
     # The first [notebook](https://observablehq.com/) of tostes.live!
   </script>
-  <script id="10" type="text/x-typescript" pinned="">
-    profiles.map(p => ({...p, json: JSON.parse(p.raw_json)}))
+  <script id="22" type="text/x-typescript" pinned="">
+    // JSON.parse(matches[0].raw_json)
+    [matches, profiles]
   </script>
-  <script id="7" type="application/sql" pinned="" database="cs2teamdedication" output="profiles">
-    select * from profiles
+  <script id="7" type="application/sql" hidden="" database="cs2teamdedication" output="profiles">
+    select * from profiles limit 1
+  </script>
+  <script id="20" type="application/sql" pinned="" database="cs2teamdedication" output="matches">
+    select * from matches limit 1
   </script>
 </notebook>
