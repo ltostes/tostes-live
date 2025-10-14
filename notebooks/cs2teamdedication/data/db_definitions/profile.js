@@ -37,12 +37,17 @@ export const PROFILES_SCHEMA_FIELDS = [
     {
         name: "isLeetifyUser",
         type: "BOOL",
-        ac_fun: (profile) => profile.personalBestsCs2 != null,
+        ac_fun: (profile) => profile.isLeetifyUser, // It is manually added to raw_json in the sync.js script
     },
     {
         name: "matches",
         type: "TEXT[]",
-        ac_fun: (profile) => JSON.stringify(profile.games.map(g => g.gameId)),
+        ac_fun: (profile) => JSON.stringify(profile.games.map(g => profile.isLeetifyUser ? g.gameId : g.adjustedGameId)),
+    },
+    {
+        name: "nonLeetifyMatches",
+        type: "TEXT[]",
+        ac_fun: (profile) => profile.isLeetifyUser ? null : JSON.stringify(profile.games.filter(f => !f.foundLeetifyMatch)),
     },
     {
         name: "raw_json",

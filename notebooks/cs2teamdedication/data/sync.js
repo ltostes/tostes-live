@@ -15,7 +15,7 @@ async function main() {
     const conn = await instance.connect();
 
     ////
-    // PROFILES
+    // PROFILES RETRIEVAL
     ////
 
     // Fetching profiles data
@@ -27,37 +27,23 @@ async function main() {
         console.error('Error fetching profiles:', error);
     }
 
-    //// Updating profiles in db
-    // Recreating table
-    try {
-        await conn.run(PROFILES_CREATETABLE_SQL_STATEMENT);
-    } catch (error) {
-        console.error('Error creating profiles table', error);
-    }
-                                    
-    // Populating profile rows
-    try {
-        const stmt = await conn.prepare(PROFILES_INSERT_SQL_STATEMENT);
-        for (const profile of profiles) {
-            const profileFieldBinds = PROFILES_INSERT_BIND_FUN(profile);
-            stmt.bind(profileFieldBinds);
-            const status = await stmt.run();
-            console.log("Inserted profile row:", profileFieldBinds.profile_id);
-        }
-    } catch (error) {
-        console.error('Error inserting rows to table: ', error)
-    }
+    // TINY HACK: for retrieving the matches, we need to know if the profile is a Leetify user, so let's add that to the raw_json
+    // Reason: match_ids are only retrievable when it is such an user
+    profiles = profiles.map((p) =>({
+        ...p,
+        isLeetifyUser: p.personalBestsCs2 != null,
+    }))
 
-    // Retrieving all matches played from profiles (we'll get the diff from DB and retrieve them online)
-    let allPlayedMatches = [];
-    try {
-        const result = await conn.run('SELECT distinct UNNEST(matches) as match_id FROM profiles where isLeetifyUser');
-        const rows = await result.getRows();
-        allPlayedMatches = rows.map(r => r[0]);
-    } catch (error) {
-        console.error('Error retrieving ids for matches to retrieve', error);
-    }
-    // console.log({allPlayedMatches});
+    const leetifyUsersProfiles = profiles.filter(f => f.isLeetifyUser);
+    const nonLeetifyUsersProfiles = profiles.filter(f => !f.isLeetifyUser);
+
+    // Retrieving all unique matches played from Leetify profiles (we'll get the diff from DB and retrieve them online)
+    const allPlayedMatches = [...new Set(
+                                leetifyUsersProfiles
+                                .map(p => p.games)
+                                .flat()
+                                .map(g => g.gameId)
+                              )];
 
     ////
     // MATCHES
@@ -79,7 +65,7 @@ async function main() {
         const missingColumns = MATCHES_SCHEMA_FIELDS.filter(f => !matchesCurrentColumns.includes(f.name));
         const columnsToDelete = matchesCurrentColumns.filter(f => !MATCHES_SCHEMA_FIELDS.map(s => s.name).includes(f));
 
-        console.log({matchesCurrentColumns, missingColumns, columnsToDelete})
+        // console.log({matchesCurrentColumns, missingColumns, columnsToDelete})
     
         for (const column of missingColumns) {
             // First adding the column
@@ -113,14 +99,16 @@ async function main() {
 
     // Retrieving saved matches
     let savedMatchIds = [];
+    let savedMatchRawJSONs = [];
     try {
-        const result = await conn.run('SELECT distinct match_id FROM matches');
+        const result = await conn.run('SELECT distinct match_id, raw_json FROM matches');
         const rows = await result.getRows();
         savedMatchIds = rows.map(r => r[0]);
+        savedMatchRawJSONs = rows.map(r => JSON.parse(r[1]));
     } catch (error) {
         console.error('Error retrieving saved matches ids', error);
     }
-    // console.log({savedMatchIds});
+    // console.log({savedMatchIds, savedMatchRawJSONs});
 
     // Calculating the matches we have yet to retrieve
     const matchesToRetrieve = allPlayedMatches
@@ -128,7 +116,7 @@ async function main() {
                                     // .slice(0,10)
     // console.log({matchesToRetrieve});
 
-    // Fetching matches
+    // // Fetching matches
     let retrievedMatches = [];
     try {
         // Collecting profile info
@@ -149,6 +137,64 @@ async function main() {
         }
     } catch (error) {
         console.error('Error inserting match rows to table: ', error)
+    }
+
+    ////
+    // PROFILES
+    ////
+
+    //// Updating profiles in db
+    // Recreating table
+    try {
+        await conn.run(PROFILES_CREATETABLE_SQL_STATEMENT);
+    } catch (error) {
+        console.error('Error creating profiles table', error);
+    }
+
+    // console.log({savedMatchRawJSONs})
+
+
+    // ANOTHER HACK: We need to update the non-Leetify profile user with real match IDs, because they get crap ids - that aren't joinable with the retrieved matches.
+    const allMatches = [...savedMatchRawJSONs, ...retrievedMatches];
+    // console.log({t: JSON.stringify(savedMatchRawJSONs).slice(0,100), z: savedMatchRawJSONs.length});
+
+    const updatedNonLeetifyUsersProfiles = nonLeetifyUsersProfiles.map(profile => ({
+        ...profile,
+        games: profile.games.map(g => {
+            const {gameId, gameFinishedAt, tLeetifyRating, ctLeetifyRating} = g;
+
+            // These are the identifying conditions found best via testing
+            const identifiedMatches = allMatches.filter(f => 
+                f.finishedAt.slice(0,10) == gameFinishedAt.slice(0,10) // Same date
+                && f.playerStats.find(ps => ps.steam64Id == profile.meta.steam64Id) // Player is playing the game
+                && ((f.playerStats.find(ps => ps.steam64Id == profile.meta.steam64Id).ctLeetifyRating ?? 0) == ctLeetifyRating) // Player scored the exact ratings for ct and t
+                && ((f.playerStats.find(ps => ps.steam64Id == profile.meta.steam64Id).tLeetifyRating ?? 0) == tLeetifyRating)
+            )
+
+            const foundLeetifyMatch = identifiedMatches.length == 1;
+            const adjustedGameId = foundLeetifyMatch ?  identifiedMatches[0].id : gameId
+
+            return {
+                ...g,
+                adjustedGameId,
+                foundLeetifyMatch
+            };
+        })
+    }))
+
+    const finalProfiles = [...leetifyUsersProfiles, ...updatedNonLeetifyUsersProfiles]
+                                    
+    // // Populating profile rows
+    try {
+        const stmt = await conn.prepare(PROFILES_INSERT_SQL_STATEMENT);
+        for (const profile of finalProfiles) {
+            const profileFieldBinds = PROFILES_INSERT_BIND_FUN(profile);
+            stmt.bind(profileFieldBinds);
+            const status = await stmt.run();
+            console.log("Inserted profile row:", profileFieldBinds.profile_id);
+        }
+    } catch (error) {
+        console.error('Error inserting rows to table: ', error)
     }
 
     conn.closeSync();
