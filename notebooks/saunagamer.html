@@ -1,0 +1,23 @@
+<!doctype html>
+<notebook theme="air">
+  <title>Sauna Gamer</title>
+  <script id="1" type="text/markdown">
+    # Sauna Gamer
+    Painel de dedicação do time
+  </script>
+  <script id="5" type="text/markdown">
+    Aux
+  </script>
+  <script id="24" type="text/x-typescript" pinned="">
+    {
+      sample_profiles: profilessample.map(p => ({...p, json: JSON.parse(p.raw_json)})),
+      sample_matches: matchessample.map(m => ({...m, json: JSON.parse(m.raw_json)}))
+    }
+  </script>
+  <script id="2" type="application/sql" pinned="" database="cs2teamdedication" output="profilessample">
+    select * from profiles limit 1
+  </script>
+  <script id="4" type="application/sql" pinned="" database="cs2teamdedication" output="matchessample">
+    select * from matches limit 1
+  </script>
+</notebook>
