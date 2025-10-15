@@ -60,14 +60,9 @@ export const PLAYERMATCHES_BASE_SCHEMA_FIELDS = [
         ac_fun: (match) => match.scores[1]
     },
     {
-        name: "kills",
+        name: "rounds",
         type: "INTEGER",
-        ac_fun: (match) => match.kills ?? null
-    },
-    {
-        name: "deaths",
-        type: "INTEGER",
-        ac_fun: (match) => match.deaths ?? null
+        ac_fun: (match) => match.scores[0] + match.scores[1]
     },
     {
         name: "leetifyRating",
@@ -103,7 +98,7 @@ export const PLAYERMATCHES_BASE_SCHEMA_FIELDS = [
     // ... Here goes the leetify stats, defined next
 ]
 
-const currentplayer_stats = (match) => ({ // A small prep for profile_stats so that we don't need to pull each profile's score for every metric
+const currentplayer_stats = (match) => ({ // A small prep for player_stats so that we don't need to pull each profile's score for every metric
     teamPartySize: match.joinedMatch.playerStats.filter(f => PROFILE_LIST.map(p => p.id).includes(f.steam64Id)).length,
     ...match.joinedMatch.playerStats.find(f => f.steam64Id == match.profile.meta.steam64Id)
 })
@@ -115,6 +110,122 @@ export const PLAYERMATCHES_LEETIFYGAME_SCHEMA_FIELDS = [
         type: "INTEGER",
         ac_fun: (match) => match.player_stats.teamPartySize
     },
+    {
+        name: "kills",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.totalKills
+    },
+    {
+        name: "assists",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.totalAssists
+    },
+    {
+        name: "deaths",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.totalDeaths
+    },
+    {
+        name: "roundsSurvived",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.roundsSurvived
+    },
+    {
+        name: "mvps",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.mvps
+    },
+    {
+        name: "personalPerformanceRating",
+        type: "FLOAT",
+        ac_fun: (match) => match.player_stats.personalPerformanceRating
+    },
+
+    // Match
+    {
+        name: "ctRoundsWon",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.ctRoundsWon
+    },
+    {
+        name: "ctRoundsLost",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.ctRoundsLost
+    },
+    {
+        name: "tRoundsWon",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.tRoundsWon
+    },
+    {
+        name: "tRoundsLost",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.tRoundsLost
+    },
+    {
+        name: "initialTeamNumber",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.initialTeamNumber
+    },
+
+    // Aim
+    {
+        name: "damage",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.totalDamage
+    },
+    {
+        name: "shotsFired",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.shotsFired
+    },
+    {
+        name: "shotsHitFoe",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.shotsHitFoe
+    },
+    {
+        name: "shotsHitFoeHead",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.shotsHitFoeHead
+    },
+    {
+        name: "shotsHitFriend",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.shotsHitFriend
+    },
+    {
+        name: "reactionTime",
+        type: "FLOAT",
+        ac_fun: (match) => match.player_stats.reactionTime
+    },
+    {
+        name: "sprayAccuracy",
+        type: "FLOAT",
+        ac_fun: (match) => match.player_stats.sprayAccuracy
+    },
+    // Utility
+    {
+        name: "utilityOnDeathAvg",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.utilityOnDeathAvg
+    },
+    {
+        name: "smokeThrown",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.smokeThrown
+    },
+    {
+        name: "flashbangThrown",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.flashbangThrown
+    },
+    {
+        name: "molotovThrown",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.molotovThrown
+    },
+    // Raw
     {
         name: "profileStats_raw_json",
         type: "JSON",
