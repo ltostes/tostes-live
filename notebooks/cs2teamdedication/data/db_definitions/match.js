@@ -11,11 +11,6 @@ export const MATCHES_SCHEMA_FIELDS = [
         primary_key: true,
     },
     {
-        name: "retrieval_date",
-        type: "DATE",
-        ac_fun: (match) => new Date().toISOString().slice(0, 10)
-    },
-    {
         name: "session_date",
         type: "DATE",
         ac_fun: (match) => dateRounding(match.createdAt)
@@ -24,6 +19,11 @@ export const MATCHES_SCHEMA_FIELDS = [
         name: "map_name",
         type: "TEXT",
         ac_fun: (match) => match.mapName
+    },
+    {
+        name: "retrieval_date",
+        type: "DATE",
+        ac_fun: (match) => new Date().toISOString().slice(0, 10)
     },
     {
         name: "raw_json",
