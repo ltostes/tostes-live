@@ -23,7 +23,7 @@ export const MATCHES_SCHEMA_FIELDS = [
     {
         name: "retrieval_date",
         type: "DATE",
-        ac_fun: (match) => new Date().toISOString().slice(0, 10)
+        ac_fun: (match) => match.retrievalDate
     },
     {
         name: "raw_json",

@@ -12,7 +12,7 @@ export const PROFILES_SCHEMA_FIELDS = [
     {
         name: "retrieval_date",
         type: "DATE",
-        ac_fun: (profile) => new Date().toISOString().slice(0, 10)
+        ac_fun: (profile) => profile.retrievalDate
     },
     {
         name: "name",

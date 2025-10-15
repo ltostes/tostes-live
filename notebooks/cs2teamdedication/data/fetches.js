@@ -5,7 +5,8 @@ export async function fetchProfile(profile_id) {
     try {
       const response = await fetch(url);
       const data = await response.json();
-      return data; // Return the fetched data
+      const data_withRetrieval = {...data, retrievalDate: new Date().toISOString().slice(0, 10)};
+      return data_withRetrieval; // Return the fetched data
     } catch (error) {
       console.error("Error fetching profile:", profile_id, error);
       throw error; // Throw an error if something goes wrong
@@ -31,7 +32,8 @@ export async function fetchMatchDetails(matchId) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    return data; // Return the fetched data
+    const data_withRetrieval = {...data, retrievalDate: new Date().toISOString().slice(0, 10)};
+    return data_withRetrieval; // Return the fetched data
   } catch (error) {
     console.error("Error fetching match details:", matchId, error);
     throw error; // Throw an error if something goes wrong
