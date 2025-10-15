@@ -12,7 +12,7 @@
   "scripts": {
     "docs:preview": "notebooks preview",
     "docs:build": "notebooks build -- *.html",
-    "docs:deploy": "aws s3 sync .observable/dist/ s3://tostes-live-bucket/notebooks/ --delete && aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\"",
+    "docs:deploy": "aws s3 sync .observable/dist/ s3://tostes-live-bucket/notebooks/ --delete && sleep 10 && aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\"",
     "docs:recache": "aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\""
   }
 }
