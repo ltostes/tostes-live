@@ -13,7 +13,7 @@ export const MATCHES_SCHEMA_FIELDS = [
     {
         name: "session_date",
         type: "DATE",
-        ac_fun: (match) => dateRounding(match.createdAt)
+        ac_fun: (match) => dateRounding(match.finishedAt)
     },
     {
         name: "map_name",

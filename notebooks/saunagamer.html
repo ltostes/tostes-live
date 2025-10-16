@@ -3,21 +3,238 @@
   <title>Sauna Gamer</title>
   <script id="1" type="text/markdown">
     # Sauna Gamer
-    Painel de dedicação do time
   </script>
-  <script id="5" type="text/markdown">
-    Aux
+  <script id="47" type="text/x-typescript">
+    const backwards_horizon = view(Inputs.range([0,d3.max(tctdata, d => d.days_ago)], {step: 1, value: 240, label: 'Até X dias atrás'}))
   </script>
-  <script id="24" type="text/x-typescript" pinned="">
-    {
-      sample_profiles: profilessample.map(p => ({...p, json: JSON.parse(p.raw_json)})),
-      sample_matches: matchessample.map(m => ({...m, json: JSON.parse(m.raw_json)}))
+  <script id="45" type="text/x-typescript">
+    const gdata_tct = tctdata
+      .filter(f => f.days_ago <= backwards_horizon);
+
+    const xdomain = d3.extent(gdata_tct, d => d.leetifyRating),
+    const colordomain = d3.scaleSequential(d3.interpolateRdYlGn).domain([-0.05,0.05])
+
+    const params_tct = {
+      general : {
+        style: "background: #444; color: white",
+        width,
+        marginLeft: 80,
+        marginRight: 20,
+      },
+      commom_marks: [
+        // Plot.frame(),
+        Plot.ruleX([0], {stroke: 'white'}),
+      ]
     }
+    let test;
+
+    display(md`Performance segundo o Leetify`)
+    display(Plot.plot({
+      ...params_tct.general,
+      marginTop: 30,
+      x: {
+        axis: null
+        , domain: xdomain
+      },
+      y: {
+        axis: null
+      },
+      marks: [
+        ...params_tct.commom_marks,
+        Plot.tickX(gdata_tct, {
+          x: 'leetifyRating',
+          opacity: 0.2,
+        }),
+        Plot.tickX(gdata_tct, Plot.groupY({
+            x:'mean',
+            stroke: (g) => colordomain(d3.mean(g))
+          },{
+          x: 'leetifyRating',
+          y: 0,
+          z: null,
+          opacity: 1,
+          stroke: 'leetifyRating',
+          strokeWidth: 2,
+        })),
+        Plot.dot(gdata_tct, Plot.groupY({x:'mean'},{
+          x: 'leetifyRating',
+          y: 0,
+          z: null,
+          dy: -50,
+          opacity: 1,
+          fill: d => colordomain(d.leetifyRating),
+          strokeWidth: 0.5,
+          stroke: 'black'
+        })),
+        Plot.text(gdata_tct, Plot.groupY({
+                                          x:'mean'
+                                         },{
+          x: 'leetifyRating',
+          y: 0,
+          z: null,
+          dy: -50,
+          text: (d) => `Combinadão do time`,
+          textAnchor: 'start',
+          opacity: 0.5,
+          dx: 8,
+        })),
+        Plot.text(gdata_tct, Plot.groupY({
+                                          x:'mean',
+                                          text: (g) => d3.format('.3f')(d3.mean(g))
+                                         },{
+          x: 'leetifyRating',
+          y: 0,
+          z: null,
+          dy: -60,
+          text: 'leetifyRating',
+          frameAnchor: 'top',
+          lineAnchor: 'middle',
+          textWeight: 'bold'
+        })),
+      ]
+    }))
+    display(Plot.plot({
+      ...params_tct.general,
+      x: {
+        domain: xdomain
+      },
+      y: {
+        label: null,
+        tickSize: 0
+      },
+      marks: [
+        ...params_tct.commom_marks,
+        Plot.tickX(gdata_tct, {
+          x: 'leetifyRating',
+          y: 'mapName',
+          opacity: 0.2,
+        }),
+        Plot.tickX(gdata_tct, Plot.groupY({
+            x:'mean',
+            stroke: (g) => colordomain(d3.mean(g))
+          },{
+          x: 'leetifyRating',
+          y: 'mapName',
+          opacity: 1,
+          z: null,
+          stroke: 'leetifyRating',
+          strokeWidth: 4,
+          sort: {y: '-x'}
+        })),
+      ]
+    }))
+    // display(gdata_tct)
+    // display(test)
+  </script>
+  <script id="49" type="text/markdown">
+    ### O resto tá inacabado, e serve como laboratório
+    Pode ignorar
+  </script>
+  <script id="42" type="application/sql" database="cs2teamdedication" output="tctdata">
+    with team_matches as (
+      select
+        session_date
+        , match_id
+        , mapName
+        , initialTeamNumber
+        , matchResult
+        , rounds
+        , tLeetifyRatingRounds as trounds
+        , ctLeetifyRatingRounds as ctrounds
+        , tRoundsWon as trounds_won
+        , ctRoundsWon as ctrounds_won
+        -- , sum(case when matchResult = 'win' then 1 else 0 end) as wins
+        -- , sum(case when matchResult = 'loss' then 1 else 0 end) as losses
+        -- , sum(case when matchResult = 'draw' then 1 else 0 end) as draws
+        , avg(leetifyRating) as leetifyRating
+        , avg(tLeetifyRating) as tLeetifyRating
+        , avg(ctLeetifyRating) as ctLeetifyRating
+      from
+        player_matches
+      where
+        teamPartySize >= 3
+      group by
+        1,2,3,4,5,6,7,8,9,10
+    )
+    select
+      *,
+      date_diff('day', session_date, current_date) as days_ago
+    from
+      team_matches
+  </script>
+  <script id="34" type="text/x-typescript">
+    const hePlot = Plot.plot({
+      width,
+      marginLeft: 120,
+      height: 1200,
+      fy: {
+        label: null
+      },
+      x : {
+        type: 'time',
+        domain: [d3.max(ffdata, d => d.session_date),d3.timeDay.offset(d3.max(ffdata, d => d.session_date),-200)],
+        grid: true
+      },
+      marks: [
+        Plot.dot(ffdata,
+        Plot.dodgeY({
+          fy: 'name',
+          r: d => d.totalHEdamage,
+          x: 'session_date',
+          fill: 'heThrown',
+          anchor: 'middle',
+          tip:true
+        }))
+      ]
+    })
+  </script>
+  <script id="33" type="application/sql" database="cs2teamdedication" output="ffdata">
+    select
+      name, session_date
+      , count(*) as games
+      , sum(rounds) as total_rounds
+      , sum(heThrown) as heThrown
+      , sum(heThrown * heFriendsDamageAvg) as totalHEdamage
+      , sum(flashbangThrown) as flashbangThrown
+      , sum(flashbangHitFriend) as flashbangHitFriend
+      , sum(shotsHitFriend) as shotsHitFriend
+    from
+      player_matches pm
+      left join profiles p on pm.profile_id = p.profile_id
+    where
+      teamPartySize >= 3
+    group by 1,2
+      order by 2 desc, 1
+    -- limit 10
+  </script>
+  <script id="32" type="text/markdown">
+    Falei pra ignorar rapá
+  </script>
+  <script id="24" type="text/x-typescript">
+    const sample_profiles = profilessample.map(p => ({
+      ...p
+      , recentRatings: JSON.parse(p.recentRatings)
+      , personalBestsCS2: JSON.parse(p.personalBestsCS2)
+      , json: JSON.parse(p.raw_json)
+    }))
+    const sample_matches = matchessample.map(m => ({...m, json: JSON.parse(m.raw_json)}))
+    const sample_playermatches = playermatchessample
+
+    display({
+      sample_profiles,
+      sample_matches,
+      sample_playermatches
+    })
   </script>
   <script id="2" type="application/sql" pinned="" database="cs2teamdedication" output="profilessample">
-    select * from profiles limit 1
+    select * from profiles where profile_id = '76561198056952889' limit 1
   </script>
   <script id="4" type="application/sql" pinned="" database="cs2teamdedication" output="matchessample">
-    select * from matches limit 1
+    select * from matches where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2' limit 1
+  </script>
+  <script id="31" type="application/sql" pinned="" database="cs2teamdedication" output="playermatchessample">
+    select * from player_matches
+      where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2'
+    limit 10
   </script>
 </notebook>

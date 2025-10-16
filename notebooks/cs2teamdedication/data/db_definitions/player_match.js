@@ -22,7 +22,7 @@ export const PLAYERMATCHES_BASE_SCHEMA_FIELDS = [
     {
         name: "match_id",
         type: "TEXT",
-        ac_fun: (match) => match.gameId,
+        ac_fun: (match) => match.profile.isLeetifyUser ? match.gameId : match.adjustedGameId,
     },
     {
         name: "isLeetifyUser",
@@ -33,11 +33,6 @@ export const PLAYERMATCHES_BASE_SCHEMA_FIELDS = [
         name: "foundLeetifyMatch",
         type: "BOOL",
         ac_fun: (match) => match.profile.isLeetifyUser || match.foundLeetifyMatch,
-    },
-    {
-        name: "session_date",
-        type: "DATE",
-        ac_fun: (match) => dateRounding(match.gameFinishedAt)
     },
     {
         name: "mapName",
@@ -104,7 +99,12 @@ const currentplayer_stats = (match) => ({ // A small prep for player_stats so th
 })
 
 export const PLAYERMATCHES_LEETIFYGAME_SCHEMA_FIELDS = [
-    // Excluded (already available): session_date, mapName, matchResult, ownTeamScore, enemyTeamScore, kills, deaths, [t,ct]LeetifyRatings[+Rounds]
+    // Excluded (already available): mapName, matchResult, ownTeamScore, enemyTeamScore, [t,ct,total]LeetifyRating[+Rounds]
+    {
+        name: "session_date",
+        type: "DATE",
+        ac_fun: (match) => dateRounding(match.joinedMatch.finishedAt)
+    },
     {
         name: "teamPartySize",
         type: "INTEGER",
@@ -190,11 +190,6 @@ export const PLAYERMATCHES_LEETIFYGAME_SCHEMA_FIELDS = [
         ac_fun: (match) => match.player_stats.shotsHitFoeHead
     },
     {
-        name: "shotsHitFriend",
-        type: "INTEGER",
-        ac_fun: (match) => match.player_stats.shotsHitFriend
-    },
-    {
         name: "reactionTime",
         type: "FLOAT",
         ac_fun: (match) => match.player_stats.reactionTime
@@ -224,6 +219,27 @@ export const PLAYERMATCHES_LEETIFYGAME_SCHEMA_FIELDS = [
         name: "molotovThrown",
         type: "INTEGER",
         ac_fun: (match) => match.player_stats.molotovThrown
+    },
+    {
+        name: "heThrown",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.heThrown
+    },
+    // Friendly fire
+    {
+        name: "shotsHitFriend",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.shotsHitFriend
+    },
+    {
+        name: "heFriendsDamageAvg",
+        type: "FLOAT",
+        ac_fun: (match) => match.player_stats.heFriendsDamageAvg
+    },
+    {
+        name: "flashbangHitFriend",
+        type: "INTEGER",
+        ac_fun: (match) => match.player_stats.flashbangHitFriend
     },
     // Raw
     {
