@@ -1,36 +1,66 @@
 <!doctype html>
-<notebook theme="air">
+<notebook theme="slate">
   <title>Sauna Gamer</title>
   <script id="1" type="text/markdown">
     # Sauna Gamer
   </script>
   <script id="47" type="text/x-typescript">
-    const backwards_horizon = view(Inputs.range([0,d3.max(tctdata, d => d.days_ago)], {step: 1, value: 240, label: 'Até X dias atrás'}))
+    const backwards_horizon_input = Inputs.range([0,d3.max(tctdata, d => d.days_ago)], {step: 1, value: 240, label: 'Até X dias atrás'})
+
+    const backwards_horizon = Generators.input(backwards_horizon_input)
+
+    display(html`
+        <div
+          style='display:flex;
+                 justify-content:space-between;
+                 align-items:center;
+                 '>
+            ${backwards_horizon_input}
+            ${md`_Última atualização: ${d3.timeFormat('%Y-%m-%d')(update_date[0].last_update)}_`}
+        </div>`)
+  </script>
+  <script id="50" type="text/markdown">
+    ### Performance do time segundo o Leetify
+    _Cada linha é um jogo. Quanto mais falho, mais antigo. Coloridas são o acumulado._
   </script>
   <script id="45" type="text/x-typescript">
-    const gdata_tct = tctdata
+    const gdata_per = tctdata
       .filter(f => f.days_ago <= backwards_horizon);
 
-    const xdomain = d3.extent(gdata_tct, d => d.leetifyRating),
     const colordomain = d3.scaleSequential(d3.interpolateRdYlGn).domain([-0.05,0.05])
+    const xdomain = [-0.10,0.10]
 
-    const params_tct = {
+    const params_per = {
       general : {
-        style: "background: #444; color: white",
         width,
         marginLeft: 80,
         marginRight: 20,
       },
       commom_marks: [
         // Plot.frame(),
-        Plot.ruleX([0], {stroke: 'white'}),
-      ]
+        Plot.ruleX([0], {stroke: 'white', strokeDasharray: '5,5'}),
+      ],
+      tickX_main: {
+          x: 'leetifyRating',
+          opacity: d => 30/d.days_ago,
+        },
+      tickX_groupY_output: {
+            x:'mean',
+            stroke: (g) => colordomain(d3.mean(g))
+          },
+      tickX_groupY_input: {
+          x: 'leetifyRating',
+          y: 0,
+          z: null,
+          stroke: 'leetifyRating',
+          strokeWidth: 2,
+        }
     }
     let test;
 
-    display(md`Performance segundo o Leetify`)
+    // Main plot
     display(Plot.plot({
-      ...params_tct.general,
+      ...params_per.general,
       marginTop: 30,
       x: {
         axis: null
@@ -40,23 +70,11 @@
         axis: null
       },
       marks: [
-        ...params_tct.commom_marks,
-        Plot.tickX(gdata_tct, {
-          x: 'leetifyRating',
-          opacity: 0.2,
-        }),
-        Plot.tickX(gdata_tct, Plot.groupY({
-            x:'mean',
-            stroke: (g) => colordomain(d3.mean(g))
-          },{
-          x: 'leetifyRating',
-          y: 0,
-          z: null,
-          opacity: 1,
-          stroke: 'leetifyRating',
-          strokeWidth: 2,
-        })),
-        Plot.dot(gdata_tct, Plot.groupY({x:'mean'},{
+        ...params_per.commom_marks,
+        Plot.tickX(gdata_per, params_per.tickX_main),
+        Plot.tickX(gdata_per, Plot.groupY(params_per.tickX_groupY_output,
+                                          params_per.tickX_groupY_input)),
+        Plot.dot(gdata_per, Plot.groupY({x:'mean'},{
           x: 'leetifyRating',
           y: 0,
           z: null,
@@ -66,22 +84,24 @@
           strokeWidth: 0.5,
           stroke: 'black'
         })),
-        Plot.text(gdata_tct, Plot.groupY({
-                                          x:'mean'
-                                         },{
-          x: 'leetifyRating',
-          y: 0,
-          z: null,
-          dy: -50,
-          text: (d) => `Combinadão do time`,
-          textAnchor: 'start',
-          opacity: 0.5,
-          dx: 8,
-        })),
-        Plot.text(gdata_tct, Plot.groupY({
+        // Plot.text(gdata_per, Plot.groupY({
+        //                                   x:'mean'
+        //                                  },
+        //                                  {
+        //   x: 'leetifyRating',
+        //   y: 0,
+        //   z: null,
+        //   dy: -50,
+        //   text: (d) => `Combinadão do time`,
+        //   textAnchor: 'start',
+        //   opacity: 0.5,
+        //   dx: 8,
+        // })),
+        Plot.text(gdata_per, Plot.groupY({
                                           x:'mean',
                                           text: (g) => d3.format('.3f')(d3.mean(g))
-                                         },{
+                                         },
+                                         {
           x: 'leetifyRating',
           y: 0,
           z: null,
@@ -93,8 +113,9 @@
         })),
       ]
     }))
+    // By map plot
     display(Plot.plot({
-      ...params_tct.general,
+      ...params_per.general,
       x: {
         domain: xdomain
       },
@@ -103,28 +124,88 @@
         tickSize: 0
       },
       marks: [
-        ...params_tct.commom_marks,
-        Plot.tickX(gdata_tct, {
-          x: 'leetifyRating',
+        ...params_per.commom_marks,
+        Plot.tickX(gdata_per, {
+          ...params_per.tickX_main,
           y: 'mapName',
-          opacity: 0.2,
         }),
-        Plot.tickX(gdata_tct, Plot.groupY({
-            x:'mean',
-            stroke: (g) => colordomain(d3.mean(g))
-          },{
-          x: 'leetifyRating',
-          y: 'mapName',
-          opacity: 1,
-          z: null,
-          stroke: 'leetifyRating',
-          strokeWidth: 4,
-          sort: {y: '-x'}
-        })),
+        Plot.tickX(gdata_per, Plot.groupY(params_per.tickX_groupY_output,
+                                          {
+                                            ...params_per.tickX_groupY_input,
+                                            y: 'mapName',
+                                            sort: {y: '-x'},
+                                          }))
       ]
     }))
-    // display(gdata_tct)
+    // display(gdata_per)
     // display(test)
+  </script>
+  <script id="53" type="text/markdown">
+    _Performance de T e CT separada._
+  </script>
+  <script id="52" type="text/x-typescript">
+    const gdata_tct = tctdata
+      .filter(f => f.days_ago <= backwards_horizon);
+
+    const params_tct = {
+      general: {
+        width: width,
+        marginLeft: 80,
+        marginRight: 20,
+      },
+      commom_marks: [
+        // Plot.frame(),
+        Plot.ruleX([0], {stroke: 'white', strokeDasharray: '5,5'}),
+      ],
+      agg_fun_ct: g => d3.sum(g, d => d.ctrounds * d.ctLeetifyRating) / d3.sum(g, d => d.ctrounds),
+      agg_fun_t: g => d3.sum(g, d => d.trounds * d.tLeetifyRating) / d3.sum(g, d => d.trounds),
+      maps_order: d3.groups(gdata_tct, d => d.mapName).sort((a,b) => d3.descending(a[1].length, b[1].length)).map(d => d[0])
+    }
+
+    const t_ctplot = (isCT, filter_fun = () => true) => Plot.plot({
+      ...params_tct.general,
+      y: {
+        axis: null
+      },
+      x: {
+        axis : null,
+        domain: xdomain
+      },
+      marks: [
+        ...params_tct.commom_marks,
+        Plot.text([isCT ? 'CT' : 'T'], {
+          frameAnchor: 'left',
+          textAnchor: 'middle',
+          dx: -30,
+          fontSize: '1rem'}),
+        Plot.tickX(gdata_tct.filter(filter_fun), {
+          x: isCT ? 'ctLeetifyRating' : 'tLeetifyRating',
+          opacity: d => 30/d.days_ago
+        }),
+        Plot.tickX(gdata_tct.filter(filter_fun),Plot.groupY({
+                                            x: isCT ? params_tct.agg_fun_ct : params_tct.agg_fun_t,
+                                            stroke: (g) => colordomain(d3.mean(g))
+                                         },
+                                         {
+                                            y: 0,
+                                            z: null,
+                                            stroke: isCT ? 'ctLeetifyRating' : 'tLeetifyRating',
+                                            strokeWidth: 2,
+                                        })),
+
+      ]
+    })
+
+    display(t_ctplot(false))
+    display(t_ctplot(true))
+
+    for (const mn of params_tct.maps_order) {
+      display(md`${mn}`);
+      display(t_ctplot(false, f => f.mapName == mn));
+      display(t_ctplot(true, f => f.mapName == mn));
+      display(Plot.axisX().plot({width,  x: t_ctplot(true).scale("x")}))
+    }
+    // display(gdata_tct)
   </script>
   <script id="49" type="text/markdown">
     ### O resto tá inacabado, e serve como laboratório
@@ -187,6 +268,7 @@
         }))
       ]
     })
+    display(md`nada a ver por enquanto`)
   </script>
   <script id="33" type="application/sql" database="cs2teamdedication" output="ffdata">
     select
@@ -226,15 +308,18 @@
       sample_playermatches
     })
   </script>
-  <script id="2" type="application/sql" pinned="" database="cs2teamdedication" output="profilessample">
+  <script id="2" type="application/sql" database="cs2teamdedication" output="profilessample">
     select * from profiles where profile_id = '76561198056952889' limit 1
   </script>
-  <script id="4" type="application/sql" pinned="" database="cs2teamdedication" output="matchessample">
+  <script id="4" type="application/sql" database="cs2teamdedication" output="matchessample">
     select * from matches where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2' limit 1
   </script>
-  <script id="31" type="application/sql" pinned="" database="cs2teamdedication" output="playermatchessample">
+  <script id="31" type="application/sql" database="cs2teamdedication" output="playermatchessample">
     select * from player_matches
       where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2'
     limit 10
+  </script>
+  <script id="54" type="application/sql" database="cs2teamdedication" output="update_date">
+    select current_date as last_update
   </script>
 </notebook>
