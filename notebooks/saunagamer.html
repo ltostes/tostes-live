@@ -143,69 +143,84 @@
   <script id="53" type="text/markdown">
     _Performance de T e CT separada._
   </script>
-  <script id="52" type="text/x-typescript">
-    const gdata_tct = tctdata
-      .filter(f => f.days_ago <= backwards_horizon);
+  <script id="60" type="text/x-typescript">
+    const gdata_f_tct = tctdata
+      .filter(f => f.days_ago <= backwards_horizon)
+      .map(row => {
+        const {session_date, days_ago, mapName, match_id,
+                tLeetifyRating, tLeetifyRatingRounds, trounds,
+                ctLeetifyRating, ctLeetifyRatingRounds, ctrounds
+              } =  row;
 
-    const params_tct = {
+        const base = {session_date, days_ago, mapName, match_id};
+        return [
+          {...base, side: "TR", sideLeetifyRating: tLeetifyRating, sideRounds: trounds},
+          {...base, side: "CT", sideLeetifyRating: ctLeetifyRating, sideRounds: ctrounds},
+        ]
+      }).flat();
+
+    const params_f_tct = {
       general: {
         width: width,
+        height: 200,
         marginLeft: 80,
         marginRight: 20,
+        // insetLeft: 10,
+        y: {
+          label: null,
+          tickSize: 0
+        },
+        x: {
+          domain: xdomain,
+          axis: null
+        },
       },
       commom_marks: [
         // Plot.frame(),
         Plot.ruleX([0], {stroke: 'white', strokeDasharray: '5,5'}),
       ],
-      agg_fun_ct: g => d3.sum(g, d => d.ctrounds * d.ctLeetifyRating) / d3.sum(g, d => d.ctrounds),
-      agg_fun_t: g => d3.sum(g, d => d.trounds * d.tLeetifyRating) / d3.sum(g, d => d.trounds),
-      maps_order: d3.groups(gdata_tct, d => d.mapName).sort((a,b) => d3.descending(a[1].length, b[1].length)).map(d => d[0])
+      maps_order: d3.groups(gdata_f_tct, d => d.mapName).sort((a,b) => d3.descending(a[1].length, b[1].length)).map(d => d[0])
     }
 
-    const t_ctplot = (isCT, filter_fun = () => true) => Plot.plot({
-      ...params_tct.general,
-      y: {
-        axis: null
-      },
-      x: {
-        axis : null,
-        domain: xdomain
-      },
+    const f_tct_plot = (height, facet) => Plot.plot({
+      ...params_f_tct.general,
+      ...(facet && {
+        fy: {
+          axis: 'left',
+          label: null,
+          ...(facet == 'mapName' && {domain: params_f_tct.maps_order})
+        },
+        y: {
+          ...params_f_tct.general.y,
+          axis: 'right'
+        }
+      }),
+      height,
       marks: [
-        ...params_tct.commom_marks,
-        Plot.text([isCT ? 'CT' : 'T'], {
-          frameAnchor: 'left',
-          textAnchor: 'middle',
-          dx: -30,
-          fontSize: '1rem'}),
-        Plot.tickX(gdata_tct.filter(filter_fun), {
-          x: isCT ? 'ctLeetifyRating' : 'tLeetifyRating',
-          opacity: d => 30/d.days_ago
+        ...params_f_tct.commom_marks,
+        Plot.tickX(gdata_f_tct,{
+          x: 'sideLeetifyRating',
+          y: 'side',
+          opacity: d => 30/d.days_ago,
+          ...(facet && ({fy: facet}))
         }),
-        Plot.tickX(gdata_tct.filter(filter_fun),Plot.groupY({
-                                            x: isCT ? params_tct.agg_fun_ct : params_tct.agg_fun_t,
-                                            stroke: (g) => colordomain(d3.mean(g))
-                                         },
-                                         {
-                                            y: 0,
-                                            z: null,
-                                            stroke: isCT ? 'ctLeetifyRating' : 'tLeetifyRating',
-                                            strokeWidth: 2,
-                                        })),
-
+        Plot.tickX(gdata_f_tct,Plot.groupY({
+            x:'mean',
+            stroke: (g) => colordomain(d3.mean(g))
+        },{
+          x: 'sideLeetifyRating',
+          stroke: 'sideLeetifyRating',
+          y: 'side',
+          strokeWidth: 2,
+          ...(facet && ({fy: facet}))
+        })),
       ]
     })
 
-    display(t_ctplot(false))
-    display(t_ctplot(true))
+    display(f_tct_plot(200))
+    display(f_tct_plot(params_f_tct.maps_order.length * 100,'mapName'))
 
-    for (const mn of params_tct.maps_order) {
-      display(md`${mn}`);
-      display(t_ctplot(false, f => f.mapName == mn));
-      display(t_ctplot(true, f => f.mapName == mn));
-      display(Plot.axisX().plot({width,  x: t_ctplot(true).scale("x")}))
-    }
-    // display(gdata_tct)
+    // display(gdata_f_tct)
   </script>
   <script id="49" type="text/markdown">
     ### O resto tá inacabado, e serve como laboratório
