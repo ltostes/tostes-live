@@ -56,6 +56,15 @@
           strokeWidth: 2,
         }
     }
+
+    const xAxis = (plot=false, anchor='bottom') => {
+        const mark = Plot.axisX(d3.ticks(...xdomain, 10), {
+                                                                  label: 'Leetify Rating',
+                                                                  anchor
+                                                                });
+        if(!plot) return mark;
+        return mark.plot({...params_per.general})
+    }
     let test;
 
     // Main plot
@@ -134,14 +143,15 @@
                                             ...params_per.tickX_groupY_input,
                                             y: 'mapName',
                                             sort: {y: '-x'},
-                                          }))
+                                          })),
+        xAxis()
       ]
     }))
     // display(gdata_per)
     // display(test)
   </script>
   <script id="53" type="text/markdown">
-    _Performance de T e CT separada._
+    _Performance de TR e CT separada._
   </script>
   <script id="60" type="text/x-typescript">
     const gdata_f_tct = tctdata
@@ -192,7 +202,8 @@
         },
         y: {
           ...params_f_tct.general.y,
-          axis: 'right'
+          axis: 'right',
+          tickPadding: -25
         }
       }),
       height,
@@ -214,6 +225,7 @@
           strokeWidth: 2,
           ...(facet && ({fy: facet}))
         })),
+        xAxis()
       ]
     })
 
@@ -334,7 +346,12 @@
       where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2'
     limit 10
   </script>
+  <script id="62" type="text/x-typescript" hidden="">
+    const lastupdate = md`${d3.timeFormat('%Y-%m-%d')(update_date[0].last_update)}`
+  </script>
   <script id="54" type="application/sql" database="cs2teamdedication" output="update_date">
-    select current_date as last_update
+    LOAD icu;
+    SET TimeZone = 'America/Sao_Paulo';
+    select current_timestamp as last_update
   </script>
 </notebook>
