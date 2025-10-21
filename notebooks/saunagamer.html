@@ -1,12 +1,24 @@
 <!doctype html>
 <notebook theme="slate">
   <title>Sauna Gamer</title>
-  <script id="1" type="text/markdown">
-    # Sauna Gamer
+  <script id="1" type="text/x-typescript">
+    const faded_str = (str) => `<span style='color: hsl(0 0 50%);'>${str}</span>`
+
+    const last_update_str = d3.timeFormat('%Y-%m-%d')(update_date[0].last_update);
+    const last_updatePhrase = md`${faded_str(`_Última atualização: ${last_update_str}_`)}`
+
+    display(html`
+        <div
+          style='display:flex;
+                 justify-content:space-between;
+                 align-items:center;
+                 '>
+            ${md`# Sauna Gamer`}
+            ${last_updatePhrase}
+        </div>`)
   </script>
   <script id="77" type="text/x-typescript">
     const [maxX,minX] = focus;
-    const faded_str = (str) => `<span style='color: hsl(0 0 50%);'>${str}</span>`
 
     const filterResult = [maxX, minX].map(d => ({
           date: d,
@@ -16,11 +28,8 @@
           ...d,
           st: d.days_ago == 0 ? `hoje` : `${d.s_date} ${faded_str(`_(${d.days_ago} dias atrás)_`)}`
           }))
-    const last_update_str = d3.timeFormat('%Y-%m-%d')(update_date[0].last_update);
-
 
     const filtrado_phrase = md`Filtrado de ${filterResult[0].st} até ${filterResult[1].st}${filterResult[0].days_ago == 0 ? '' : faded_str(`. _[${filterResult[1].days_ago - filterResult[0].days_ago} dias]_</span>`)}`;
-    const last_updatePhrase = md`_Última atualização: ${last_update_str}_`
 
     display(html`
         <div
@@ -29,7 +38,6 @@
                  align-items:center;
                  '>
             ${filtrado_phrase}
-            ${last_updatePhrase}
         </div>`)
   </script>
   <script id="71" type="application/vnd.observable.javascript">
@@ -167,13 +175,13 @@
         Plot.tickX(gdata_per, params_per.tickX_main),
         Plot.tickX(gdata_per, Plot.groupY(params_per.tickX_groupY_output,
                                           params_per.tickX_groupY_input)),
-        Plot.dot(gdata_per, Plot.groupY({x:'mean'},{
+        Plot.dot(gdata_per, Plot.groupY({x:'mean', fill: g => colordomain(d3.mean(g))},{
           x: 'leetifyRating',
           y: 0,
           z: null,
           dy: -50,
           opacity: 1,
-          fill: d => colordomain(d.leetifyRating),
+          fill: 'leetifyRating',
           strokeWidth: 0.5,
           stroke: 'black'
         })),
@@ -319,7 +327,7 @@
     // display(gdata_f_tct)
   </script>
   <script id="49" type="text/markdown">
-    ### O resto tá inacabado, e serve como laboratório
+    ### O resto não importa
     Pode ignorar
   </script>
   <script id="42" type="application/sql" database="cs2teamdedication" output="tctdata">
@@ -432,35 +440,8 @@
   <script id="32" type="text/markdown">
     Falei pra ignorar rapá
   </script>
-  <script id="24" type="text/x-typescript">
-    const sample_profiles = profilessample.map(p => ({
-      ...p
-      , recentRatings: JSON.parse(p.recentRatings)
-      , personalBestsCS2: JSON.parse(p.personalBestsCS2)
-      , json: JSON.parse(p.raw_json)
-    }))
-    const sample_matches = matchessample.map(m => ({...m, json: JSON.parse(m.raw_json)}))
-    const sample_playermatches = playermatchessample
-
-    display({
-      sample_profiles,
-      sample_matches,
-      sample_playermatches
-    })
-  </script>
-  <script id="78" type="text/x-typescript" pinned="">
+  <script id="78" type="text/x-typescript">
     const colordomain = d3.scaleSequential(d3.interpolateRdYlGn).domain([-0.05,0.05])
-  </script>
-  <script id="2" type="application/sql" database="cs2teamdedication" output="profilessample">
-    select * from profiles where profile_id = '76561198056952889' limit 1
-  </script>
-  <script id="4" type="application/sql" database="cs2teamdedication" output="matchessample">
-    select * from matches where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2' limit 1
-  </script>
-  <script id="31" type="application/sql" database="cs2teamdedication" output="playermatchessample">
-    select * from player_matches
-      where match_id = '5443c096-fb59-4f71-b1c9-4750a81ba8b2'
-    limit 10
   </script>
   <script id="54" type="application/sql" database="cs2teamdedication" output="update_date">
     LOAD icu;
