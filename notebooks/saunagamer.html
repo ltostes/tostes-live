@@ -34,7 +34,7 @@
   </script>
   <script id="71" type="application/vnd.observable.javascript">
     viewof focus = {
-      const focusHeight = 100;
+      const focusHeight = 80;
       const height = 440;
       const margin = ({top: 20, right: 20, bottom: 25, left: 15});
       const margin_circles = ({bottom: 3, top: -10})
@@ -78,7 +78,7 @@
                         .selectAll("circle")
                         .data(([sdate, obj]) => obj)
                         .join("circle")
-                          .attr("fill", d => d.matchResult == 'win' ? 'green' : 'red')
+                          .attr("fill", d => colordomain(d.leetifyRating))
                           .attr("r", (d) => 2)
                           .attr("cx", (d) => 0)
                           .attr("cy", (d, i) => y(i));
@@ -112,7 +112,6 @@
       // .filter(f => f.days_ago <= backwards_horizon);
       .filter(f => f.session_date <= maxX && f.session_date >= minX);
 
-    const colordomain = d3.scaleSequential(d3.interpolateRdYlGn).domain([-0.05,0.05])
     const xdomain = [-0.10,0.10]
 
     const params_per = {
@@ -369,6 +368,7 @@
         , tRoundsWon as trounds_won
         , ctRoundsWon as ctrounds_won
         , teamPartySize
+        , avg(leetifyRating) as leetifyRating
       from
         player_matches
       group by
@@ -379,6 +379,8 @@
       date_diff('day', session_date, current_date) as days_ago
     from
       team_matches
+    where
+      session_date > '2021-08-30'
     order by 1 asc
   </script>
   <script id="34" type="text/x-typescript">
@@ -445,6 +447,9 @@
       sample_matches,
       sample_playermatches
     })
+  </script>
+  <script id="78" type="text/x-typescript" pinned="">
+    const colordomain = d3.scaleSequential(d3.interpolateRdYlGn).domain([-0.05,0.05])
   </script>
   <script id="2" type="application/sql" database="cs2teamdedication" output="profilessample">
     select * from profiles where profile_id = '76561198056952889' limit 1
