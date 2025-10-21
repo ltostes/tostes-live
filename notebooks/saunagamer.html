@@ -4,6 +4,8 @@
   <script id="1" type="text/x-typescript">
     const faded_str = (str) => `<span style='color: hsl(0 0 50%);'>${str}</span>`
 
+    const title = md`# Sauna Gamer`
+
     const last_update_str = d3.timeFormat('%Y-%m-%d')(update_date[0].last_update);
     const last_updatePhrase = md`${faded_str(`_Última atualização: ${last_update_str}_`)}`
 
@@ -13,31 +15,8 @@
                  justify-content:space-between;
                  align-items:center;
                  '>
-            ${md`# Sauna Gamer`}
+            ${title}
             ${last_updatePhrase}
-        </div>`)
-  </script>
-  <script id="77" type="text/x-typescript">
-    const [maxX,minX] = focus;
-
-    const filterResult = [maxX, minX].map(d => ({
-          date: d,
-          days_ago: d3.utcDay.count(d, update_date[0].last_update)+1,
-          s_date: d3.timeFormat("%Y-%m-%d")(d),
-          })).map(d => ({
-          ...d,
-          st: d.days_ago == 0 ? `hoje` : `${d.s_date} ${faded_str(`_(${d.days_ago} dias atrás)_`)}`
-          }))
-
-    const filtrado_phrase = md`Filtrado de ${filterResult[0].st} até ${filterResult[1].st}${filterResult[0].days_ago == 0 ? '' : faded_str(`. _[${filterResult[1].days_ago - filterResult[0].days_ago} dias]_</span>`)}`;
-
-    display(html`
-        <div
-          style='display:flex;
-                 justify-content:space-between;
-                 align-items:center;
-                 '>
-            ${filtrado_phrase}
         </div>`)
   </script>
   <script id="71" type="application/vnd.observable.javascript">
@@ -110,6 +89,22 @@
 
       return svg.node();
     }
+  </script>
+  <script id="77" type="text/x-typescript">
+    const [maxX,minX] = focus;
+
+    const filterResult = [maxX, minX].map(d => ({
+          date: d,
+          days_ago: d3.utcDay.count(d, update_date[0].last_update)+1,
+          s_date: d3.timeFormat("%Y-%m-%d")(d),
+          })).map(d => ({
+          ...d,
+          st: d.days_ago == 0 ? `hoje` : `${d.s_date} ${faded_str(`_(${d.days_ago} dias atrás)_`)}`
+          }))
+
+    const filtrado_phrase = md`<span style='font-size: 0.8rem;'>Filtrado de ${filterResult[0].st} até ${filterResult[1].st}${filterResult[0].days_ago == 0 ? '' : `. _Período total de ${filterResult[1].days_ago - filterResult[0].days_ago} dias_</span>`}</span>`;
+
+    display(filtrado_phrase)
   </script>
   <script id="50" type="text/markdown">
     ### Performance do time segundo o Leetify
