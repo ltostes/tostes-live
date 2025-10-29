@@ -273,10 +273,10 @@ async function main() {
         const matchesToRetrieve = allPlayedMatches.filter(f => !is_local && !alreadySavedMatchIds.includes(f))
 
         // // Fetching matches
-        const retrievedMatches = getMatchesFromAPI(matchesToRetrieve, conn);
+        const retrievedMatches = await getMatchesFromAPI(matchesToRetrieve, conn);
 
         // Inserting new match rows into DB, if any
-        retrievedMatches.length > 1 && addMatchesToDB(retrievedMatches, conn);
+        retrievedMatches.length > 1 && await addMatchesToDB(retrievedMatches, conn);
     }
 
     // Let's retrieve all saved matches that will be used for PROFILES and PROFILE MATCHES
