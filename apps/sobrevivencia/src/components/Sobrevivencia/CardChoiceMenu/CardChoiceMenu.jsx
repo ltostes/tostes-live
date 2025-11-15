@@ -4,7 +4,7 @@ import { _ } from 'lodash';
 import CardPortal from '../CardPortal';
 import { CARD_DEFINITIONS } from '../cards';
 import { FaLongArrowAltDown } from 'react-icons/fa';
-import useKeyDown from '../../../hooks/useKeyDown';
+import { useKeyDown } from '@tostes/ui';
 
 function CardChoiceMenu({cards, chooseCard, playerColor}) {
 

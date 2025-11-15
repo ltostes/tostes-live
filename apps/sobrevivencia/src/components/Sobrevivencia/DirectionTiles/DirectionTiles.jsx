@@ -3,7 +3,7 @@ import { FaLongArrowAltDown } from "react-icons/fa";
 import { AnimatePresence, motion } from "motion/react"
 
 import { CustomHexTile } from '../MapElements';
-import useKeyDown from '../../../hooks/useKeyDown';
+import { useKeyDown }  from '@tostes/ui';
 
 function DirectionTiles({targetHexes, playerColor, changeDirection, confirmDirection}) {
   useKeyDown(() => changeDirection(false), 'KeyQ')

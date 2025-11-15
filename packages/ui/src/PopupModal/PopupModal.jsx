@@ -5,7 +5,7 @@ import { X as Close } from 'react-feather';
 import FocusLock from 'react-focus-lock';
 import { RemoveScroll } from 'react-remove-scroll';
 
-import useKeyDown from '../../hooks/useKeyDown';
+import useKeyDown from '../hooks/useKeyDown';
 
 import styles from './PopupModal.module.css';
 
