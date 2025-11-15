@@ -1,0 +1,308 @@
+<!doctype html>
+<notebook theme="air">
+  <title>Exemplo de monitoramento de previsão de vendas</title>
+  <script id="1" type="text/markdown">
+    # Exemplo de monitoramento de previsão de vendas
+    Baseado em dados abertos de varejo de moda no [Kaggle](https://www.kaggle.com/datasets/ricgomes/global-fashion-retail-stores-dataset)
+  </script>
+  <script id="14" type="text/x-typescript">
+    const ref_date = view(Inputs.date({label: "Data referência",
+                                    value: "2025-01-01",
+                                    min: d3.min(gsales, dateAcc),
+                                    max: d3.max(gsales, dateAcc),
+                                   }));
+  </script>
+  <script id="40" type="text/x-typescript">
+    const backwards_horizon = view(Inputs.range([0,400], {step: 1, value: 120}))
+  </script>
+  <script id="5" type="text/x-typescript">
+    // const domain = [0, 55000];
+
+    Plot.plot({
+      width,
+      insetTop: 20,
+      x: {
+        grid: true,
+        type: 'utc',
+        domain: [d3.timeDay.offset(ref_date,-backwards_horizon) , d3.timeDay.offset(ref_date,30)]
+      },
+      y: {
+        grid: true,
+        domain: [0, graphparams.y_max],
+        tickFormat: "2s"
+      },
+      marks: [
+        Plot.line(gsales,{
+          ...Plot.groupX({
+            y: 'sum'
+          },{
+            y: 'purchases',
+            x: dateAcc,
+            clip: true
+          })
+        }),
+        Plot.ruleY([0]),
+        // Ref date
+        Plot.ruleX([ref_date], {
+          strokeDasharray: '2,2',
+          stroke: 'teal'
+        }),
+        Plot.text([ref_date], {
+          x: d => d,
+          text: d => 'Data referência',
+          textAnchor: 'start',
+          dx: 3,
+          frameAnchor: 'top'
+        }),
+        // Business days
+        Plot.areaY(
+          d3.timeDay.range(...d3.extent(gsales, dateAcc),1)
+          // gsales.filter(f => ehDiaUtil(dateAcc(f)))
+          , {
+            x: d => d,
+            y: graphparams.y_max,
+            opacity: 0.1,
+            fill: d => ehFeriado(d) ? 'purple' : ehDiaUtil(d) ? 'white' : 'darkgrey',
+            z: null,
+            dx: -5.5,
+            clip: true
+          }
+        ),
+        Plot.ruleX(d3.utcDay.range(...d3.extent(gsales, dateAcc),1), {
+          opacity: 0.1,
+          y: graphparams.y_max,
+          dx: -5.5,
+          clip: true
+        })
+      ]
+    })
+  </script>
+  <script id="38" type="text/x-typescript" pinned="">
+    const gsales = fashionsales;
+  </script>
+  <script id="41" type="text/x-typescript" pinned="">
+    const graphparams = {
+      y_max: 60000
+    }
+
+    display(graphparams)
+  </script>
+  <script id="16" type="text/x-typescript">
+    const aggOptions = [
+      {value: {period: d3.timeMonth, format: d3.timeFormat("%Y/%b")}, label: "Mês"},
+      {value: {period: d3.timeMonday, format: d3.timeFormat("%G/Semana %V")}, label: "Semana"},
+      {value: {period: Plot.utcInterval("1 day"), format: d3.timeFormat("%Y/%m/%d")}, label: "Dia"},
+    ]
+
+    const aggregation = view(Inputs.radio(aggOptions, {
+      label: "Agregação",
+      keyof: d => d.label,
+      valueof: d => d.value,
+      value: aggOptions[1].value}));
+  </script>
+  <script id="8" type="text/x-typescript">
+    generateTable(testtable)
+  </script>
+  <script id="21" type="text/x-typescript">
+    const timeGroups = d3.groups(fashionsales, d => aggregation.period(dateAcc(d)))
+
+    const columns = [
+      {label: "Período", gfun: g => g.map(r => r[0]), formater: aggregation.format},
+      {label: "Dias", gfun: getTotalDays },
+      {label: "Dias úteis", gfun: getDiasUteis },
+      {label: "In/Fi", gfun: getMinMaxDates, formater:
+        c => `${d3.timeFormat("%Y-%m-%d")(c[0])}/${d3.timeFormat("%Y-%m-%d")(c[1])}`
+      },
+      {label: `Vendas\n realizadas`, gfun: g => g.map(r => d3.sum(r[1], d => d.purchases)), formater: d3.format(',.0f')},
+      {label: "Receita", gfun: g => g.map(r => d3.sum(r[1], d => d.net_revenue)), formater: d3.format("$,.0f")},
+    ]
+
+    const testtable = d3.transpose(columns.map(col => [col.label,
+                                     ...col.gfun(timeGroups)
+                                     .map(cell => col.formater ? col.formater(cell) : cell)
+                                    ]))
+    display({timeGroups,columns,testtable})
+  </script>
+  <script id="23" type="text/x-typescript">
+    const getMinMaxDates = (g) => g.map(g => [
+                                d3.min(g[1], dateAcc),
+                                d3.max(g[1], dateAcc)
+                              ])
+
+    const getTotalDays = (g) => getMinMaxDates(g).map(g => Plot.utcInterval("1 day").count(g[0],g[1])+1);
+    const getDiasUteis = (g) => getMinMaxDates(g).map(g => countDiasUteis(g[0],g[1]));
+    display({getMinMaxDates, getTotalDays,getDiasUteis})
+  </script>
+  <script id="10" type="text/markdown">
+    ### Aux
+  </script>
+  <script id="11" type="text/x-typescript" pinned="">
+    function generateTable(arr) {
+
+      const table = d3.create("table");
+
+      const header = table.append("thead");
+      const body = table.append("tbody");
+
+      const td_headers = header.selectAll("tr td")
+                          .data(arr[0])
+                          .join("td")
+                          .text(d => d)
+
+      const tr = body.selectAll("tr")
+                  .data(arr.slice(1))
+                  .join("tr")
+
+      const td = tr.selectAll("td")
+                  .data(d => d)
+                  .join("td")
+                  .text(d => d)
+
+      return table.node()
+    }
+  </script>
+  <script id="37" type="text/x-typescript" pinned="">
+    const dateAcc = (d) => new Date(d.date)
+  </script>
+  <script id="27" type="text/x-typescript">
+    md`Gestão de feriados`
+  </script>
+  <script id="25" type="text/x-typescript">
+    import ehDiaUtil from "npm:@lfreneda/eh-dia-util";
+    const { ehFeriado } = ehDiaUtil;
+  </script>
+  <script id="28" type="text/x-typescript">
+    function countDiasUteis (min, max) {
+      const daysBetween = [...d3.utcDay.range(min,max,1), max].map(d => d3.timeFormat("%Y-%m-%d")(d));
+      return daysBetween.filter(f => ehDiaUtil(f)).length
+    }
+  </script>
+  <script id="12" type="text/markdown">
+    ### Styling
+  </script>
+  <script id="9" type="text/html">
+    <style>
+      table th, td {
+        padding: 0.5em;
+      }
+      thead {
+        font-weight: bold;
+      }
+      table td:not(:first-child) {
+        text-align: center;
+      }
+      table tr:nth-child(even) {background-color: #f2f2f2;}
+      th, td {
+        border-bottom: 1px solid #ddd;
+      }
+
+      .warning {
+        background-color: lightcoral;
+      }
+    </style>
+  </script>
+  <script id="13" type="text/markdown">
+    ### Source data
+  </script>
+  <script id="36" type="application/sql" pinned="" database="duckdb" output="fashionsales">
+    with base_transactions as (
+      select
+        "Invoice ID" as invoice
+        , "Date" as date
+        , "Customer ID" as customer
+        , "Store ID" as store
+        , "Product ID" as product_id
+        , "Payment Method" as payment_method
+        , "Unit Price" as price
+        , "Quantity" as quantity
+        , "Discount" as discount_perc
+        , "Line Total" as line_total
+      from '.observable/data/retail/transactions.csv'
+      where
+        true
+        and "Transaction Type" = 'Sale'
+    )
+    , base_product as (
+      select
+        "Product ID" as product_id
+        , "Category" as p_category
+        , "Sub Category" as p_subcategory
+        , "Production Cost" as p_cost
+      from '.observable/data/retail/products.csv'
+    )
+    , base as (
+      select
+        t.invoice
+        , t.date
+        , t.customer
+        , t.store
+        , t.product_id
+        , p.p_category
+        , p.p_subcategory
+        , p.p_cost
+        , t.payment_method
+        , t.price
+        , t.quantity
+        , t.discount_perc
+        , t.line_total
+      from
+        base_transactions t
+        left join base_product p on t.product_id = p.product_id
+    )
+    , base_agg as (
+      select
+        strftime(date, '%Y-%m-%d') as date
+        , store
+        -- , p_category
+        -- , p_subcategory
+        , count(distinct invoice) as purchases
+        , sum(line_total) as net_revenue
+        , sum(quantity*price*discount_perc) as discounted
+      from base
+      group by
+        1
+        , 2
+        -- , 3
+        -- , 4
+      order by date asc
+    )
+    select * from base_agg
+    -- limit 10
+
+    -- UNUSED TABLES
+    -- from '.observable/data/retail/stores.csv'
+    -- from '.observable/data/retail/discounts.csv'
+    -- from '.observable/data/retail/employees.csv'
+  </script>
+  <script id="4" type="application/sql" pinned="" database="duckdb" output="sales">
+    select
+      -- breakdowns
+      cast(date as date) as date
+      , country
+      , device
+      , category
+      , brand
+      , name
+      -- Revenue
+      , sum(case when type = 'purchase' then price_in_usd else null end)::DOUBLE as revenue
+      , count(distinct case when type = 'purchase' then ga_session_id else null end)::INT as purchases
+    from '.observable/data/events.parquet' events
+      left join '.observable/data/items.parquet' items on events.item_id = items.id
+      -- left join '.observable/data/users.parquet' users on events.user_id = users.id
+    where
+      true
+    group by
+      1,2,3,4,5,6
+    having
+      purchases > 0
+    order by 1 asc
+  </script>
+  <script id="2" type="application/sql" database="bq" output="t">
+    -- Example BQ connection
+    SELECT
+      COUNT(*) AS event_count,
+      COUNT(DISTINCT user_pseudo_id) AS user_count,
+      COUNT(DISTINCT event_date) AS day_count
+    FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+  </script>
+</notebook>

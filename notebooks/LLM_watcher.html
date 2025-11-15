@@ -1,0 +1,19 @@
+<!doctype html>
+<notebook theme="air">
+  <title>LLM Agents Watcher</title>
+  <script id="1" type="text/markdown">
+    # LLM Agents Watcher
+  </script>
+  <script id="4" type="text/x-typescript" pinned="">
+    logs.filter
+  </script>
+  <script id="3" type="text/x-typescript" pinned="">
+    const logs = t.map(d => (JSON.parse(d.raw_json)))
+    display(logs)
+  </script>
+  <script id="2" type="application/sql" pinned="" database="llm_watch" output="t">
+    select * from logs
+    where
+      (raw_json ->> 'type') not in ('queue-operation', 'file-history-snapshot', 'summary')
+  </script>
+</notebook>

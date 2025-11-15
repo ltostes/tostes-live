@@ -432,6 +432,27 @@
       order by 2 desc, 1
     -- limit 10
   </script>
+  <script id="80" type="application/sql" database="cs2teamdedication">
+    select
+      session_date, retrieval_date, *
+      -- , count(*) as games
+      -- , sum(rounds) as total_rounds
+      -- , sum(heThrown) as heThrown
+      -- , sum(heThrown * heFriendsDamageAvg) as totalHEdamage
+      -- , sum(flashbangThrown) as flashbangThrown
+      -- , sum(flashbangHitFriend) as flashbangHitFriend
+      -- , sum(shotsHitFriend) as shotsHitFriend
+    from
+      matches pm
+      -- player_matches pm
+      -- left join profiles p on pm.profile_id = p.profile_id
+    where
+      true
+      -- and teamPartySize >= 3
+    -- group by 1,2
+      order by 2 desc, 1
+    limit 10
+  </script>
   <script id="32" type="text/markdown">
     Falei pra ignorar rapá
   </script>
