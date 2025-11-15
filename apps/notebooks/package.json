@@ -1,0 +1,23 @@
+{
+  "name": "@tostes/notebooks",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@duckdb/node-api": "^1.3.2-alpha.26",
+    "@observablehq/notebook-kit": "^1.4.1",
+    "d3": "^7.9.0",
+    "dotenv": "^17.2.3",
+    "duckdb": "^1.4.1",
+    "jszip": "^3.10.1",
+    "node-fetch": "^3.3.2"
+  },
+  "scripts": {
+    "docs:preview": "notebooks preview",
+    "docs:clearsqlcache": "rm -rf -f .observable/cache",
+    "docs:build": "notebooks build -- *.html",
+    "docs:deploy": "aws s3 sync .observable/dist/ s3://tostes-live-bucket/notebooks/ --delete",
+    "docs:clearsitecache": "aws cloudfront create-invalidation --distribution-id E3MSHQGKYP8WLA --paths \"/*\"",
+    "docs:release": "npm run docs:clearsqlcache && npm run docs:build && npm run docs:deploy && sleep 10 && npm run docs:clearsitecache"
+  }
+}

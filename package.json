@@ -1,0 +1,22 @@
+{
+  "name": "@tostes/monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:main": "turbo run dev --filter=@tostes/main",
+    "dev:sobrevivencia": "turbo run dev --filter=@tostes/sobrevivencia",
+    "dev:notebooks": "turbo run docs:preview --filter=@tostes/notebooks",
+    "build": "turbo run build",
+    "build:main": "turbo run build --filter=@tostes/main",
+    "build:sobrevivencia": "turbo run build --filter=@tostes/sobrevivencia",
+    "build:notebooks": "turbo run docs:build --filter=@tostes/notebooks"
+  },
+  "packageManager": "npm@10.8.2",
+  "devDependencies": {
+    "turbo": "^2.6.1"
+  }
+}

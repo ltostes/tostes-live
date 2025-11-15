@@ -1,0 +1,21 @@
+{
+  "name": "@tostes/ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./*": "./src/*"
+  },
+  "peerDependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "dependencies": {
+    "react-feather": "^2.0.10",
+    "react-focus-lock": "^2.13.6",
+    "react-remove-scroll": "^2.7.1",
+    "react-router-dom": "^7.8.1"
+  }
+}

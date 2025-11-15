@@ -1,3 +1,22 @@
-/node_modules
-/cardprocessing/*
-/cardprocessing
+# Dependencies
+node_modules/
+
+# Build outputs
+build/
+dist/
+.observable/dist/
+
+# Cache
+.turbo/
+.observable/cache/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
