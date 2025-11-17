@@ -1,0 +1,805 @@
+<!doctype html>
+<notebook theme="slate">
+  <title>Can AI see emotions evoked from photographs?</title>
+  <script id="1" type="text/markdown">
+    # Can AI see emotions evoked from photographs?
+    A study based on [Russel’s circumplex model of affect](https://psycnet.apa.org/doiLanding?doi=10.1037%2Fh0077714) using the latest LLM AI models ([Google’s Gemini](https://gemini.google.com/), [Claude AI](https://claude.ai/), and [Meta’s Llama 4](https://ai.meta.com/blog/llama-4-multimodal-intelligence/)) and the [OASIS dataset](https://pubmed.ncbi.nlm.nih.gov/26907748/) as baseline. Part of the Emotional Geographies project.
+  </script>
+  <script id="12" type="text/markdown">
+    ## TL;DR:  Yes! They can.
+    And the best observed models are Google’s Gemini.
+  </script>
+  <script id="28" type="text/x-typescript">
+    const tdata = modelPerformanceMetrics
+
+    const orderedYDomain = tdata.sort((a,b) =>
+                                        d3.ascending(a.rmse_2d, b.rmse_2d)
+                                        || d3.descending(a.rwmse_2d, b.rwmse_2d)
+                                     ).map(d => d.model)
+
+    const augmentFactor = 1.5
+
+    const bmgraphSizeProportions = [1,2]
+    const bmgraphSizeScale = d3.scaleLinear()
+                              .domain([0, d3.sum(bmgraphSizeProportions)])
+                              .range([0, width])
+    const bmCirclePlotHeight = bmgraphSizeScale(bmgraphSizeProportions[0]);
+
+    const bmplot_xy = {
+          x: d => normalizeFun(d.v_wme + 4) * augmentFactor,
+          y: d => normalizeFun(d.a_wme + 4) * augmentFactor,
+    }
+
+    const tplotMetrics = [
+      {
+        metric: 'wrmse_2d',
+        label: 'Total\nAccuracy',
+        metric_label: '(WRMSE 2D)',
+        format: d3.format('+.2f'),
+      },
+      {
+        metric: 'v_wrmse',
+        label: `Valence\nAccuracy`,
+        metric_label: '(WRMSE)',
+        format: d3.format('+.2f'),
+      },
+      {
+        metric: 'a_wrmse',
+        label: `Arousal\nAccuracy`,
+        metric_label: '(WRMSE)',
+        format: d3.format('+.2f'),
+      },
+      {
+        metric: 'v_wme',
+        label: `Valence\nBias`,
+        metric_label: '(WME)',
+        format: d3.format('+.2f'),
+      },
+      {
+        metric: 'a_wme',
+        label: `Arousal\nBias`,
+        metric_label: '(WME)',
+        format: d3.format('+.2f'),
+      },
+      {
+        metric: 'mean_cost',
+        label: `Avg. Cost\nper image`,
+        metric_label: '($)',
+        format: d => d3.format('$.6f')(d)
+      },
+    ]
+
+    const bmplot_tipFun = d => [`${d.model}\n`,...tplotMetrics.map(m => `${m.label}: ${m.format(d[m.metric])}`)].join('\n')
+
+    const bmplot = Plot.plot({
+      width: bmgraphSizeScale(bmgraphSizeProportions[0]),
+      x: {axis:null},
+      y: {axis: null},
+      aspectRatio: 1,
+      marks: [
+        ...graphBaseMarks,
+        Plot.dot(tdata, {
+          ...bmplot_xy,
+          fill: d => models_colors[d.model]
+        }),
+        Plot.link(tdata, {
+          ...bmplot_xy,
+          x1: 0,
+          y1: 0,
+          stroke: d => models_colors[d.model],
+          markerEnd: "arrow"
+        }),
+        Plot.ruleX([0], {markerStart: "arrow"}),
+        Plot.ruleY([0], {markerEnd: "arrow"}),
+        Plot.text(['Valence'],{
+                                frameAnchor: 'right',
+                                textAnchor: 'end',
+                                lineAnchor: 'bottom',
+                                dx: -2,
+                                dy: -2
+                              }),
+        Plot.text(['Arousal'],{
+                                frameAnchor: 'top',
+                                textAnchor: 'end',
+                                lineAnchor: 'top',
+                                dx: 2,
+                                dy: 2,
+                                rotate: -90
+                              }),
+        Plot.text([`Bias scale: x ${d3.format('.1f')(augmentFactor)}`], {
+          frameAnchor:'bottom-left',
+          fill: 'hsl(0 0% 50% / 100%)'
+        }),
+        Plot.tip(tdata, Plot.pointer({
+          ...bmplot_xy,
+          title: bmplot_tipFun
+        })),
+      ]
+    })
+
+    const tplot = Plot.plot({
+      width: bmgraphSizeScale(bmgraphSizeProportions[1]),
+      height: bmCirclePlotHeight,
+      marginTop: 30,
+      marginLeft: 125,
+      y: {
+        label: null,
+        tickSize: 0,
+        domain: orderedYDomain
+      },
+      x: {
+        domain: tplotMetrics.map(d => d.metric),
+        axis: null,
+        tickSize: 0
+      },
+      marks: [
+        Plot.dot(tdata, {
+          y: 'model',
+          frameAnchor: 'left',
+          fill: d => models_colors[d.model]
+        })
+        , ...tplotMetrics.map(
+                  m =>
+                     [
+                       Plot.text([m.label], {
+                         x: d => m.metric,
+                         frameAnchor: 'top',
+                         dy: -10,
+                         fontWeight: 'bold',
+                         lineAnchor: 'bottom'
+                       }),
+                       Plot.text([m.metric_label], {
+                         x: d => m.metric,
+                         frameAnchor: 'top',
+                         dy: -6,
+                         lineAnchor: 'top'
+                       }),
+                       Plot.text(tdata, {
+                           y: 'model',
+                           x: d => m.metric,
+                           text: d => m.format(d[m.metric]),
+                           // dx: (d, i) => i*5
+                       })
+                     ]
+                  )
+        ]
+    })
+    // display(bmplot)
+
+    display(html`
+      <div style='display: flex;'>
+        ${bmplot}
+        ${tplot}
+      </div>
+    `)
+  </script>
+  <script id="51" type="text/markdown">
+    A generalized bias across all models was to consider photos evoking a higher arousal than human evaluators. Most models also considered valence slightly more negative than the study showed, but that is in a considerably lower magnitude than arousal bias.
+  </script>
+  <script id="49" type="text/markdown">
+    ## How well each model did with the OASIS Dataset
+    Here we can explore individual examples of how each model interpreted each photograph (and explanations).
+  </script>
+  <script id="52" type="text/x-typescript">
+    const seldot_params = {
+      x: 'Theme',
+      fx: 'Category',
+      anchor: 'middle',
+      padding: 2
+    }
+    const selected = view(Plot.plot({
+      width,
+      height: 300,
+      x: {
+        label: null,
+        axis: null
+      },
+      fx: {
+        label: null,
+        axis: 'top'
+      },
+      marks: [
+        Plot.dot(basis_data, Plot.dodgeY({
+          ...seldot_params
+        })),
+        Plot.dot(basis_data, Plot.pointer(Plot.dodgeY({
+          ...seldot_params,
+          fill: 'red',
+          tip: true,
+          // y: d => d.Theme.split(' ')[0]
+        }))),
+        Plot.dot(oasis_dataset,Plot.dodgeY({...seldot_params, opacity: 0.1}))
+      ]
+    }))
+  </script>
+  <script id="48" type="text/x-typescript">
+    const gdata = basis_data;
+
+    const flatModelInferences = gdata.map(photo => photo.model_results.map(results => ({
+      ...photo,
+      ...results
+    }))).flat().filter(f => modelsToShow.includes(f.model))
+
+    const selected_plot_tipFun = d => [
+      `${d.model}\n`
+      , `Valence: ${d3.format('.1f')(d.model_valence)}`
+      , `vs original: ${d3.format('+.1f')(d.model_valence - d.Valence_mean)}`
+      , ' '
+      , `Arousal: ${d3.format('.1f')(d.model_arousal)}`
+      , `vs original: ${d3.format('+.1f')(d.model_arousal - d.Arousal_mean)}`
+      ].join('\n')
+
+    const selected_plot = Plot.plot({
+      width: width * 0.5,
+      aspectRatio: 1,
+      x: {
+        ...axes_config,
+      },
+      y: {
+        ...axes_config,
+      },
+      marks: [
+        Plot.dot(gdata, {
+          x: 'valence',
+          y: 'arousal',
+          fill: 'darkgrey',
+        }),
+        Plot.dot(gdata.filter(f => selected?.Theme == f.Theme), {
+          x: 'valence',
+          y: 'arousal',
+          fill: 'red',
+          r: 5
+        }),
+        Plot.link(flatModelInferences.filter(f => selected?.Theme == f.Theme), {
+          x1: d => d.valence,
+          y1: d => d.arousal,
+          x2: d => d.model_n_valence + model_offsets[d.model][0],
+          y2: d => d.model_n_arousal + model_offsets[d.model][1],
+          stroke: d => models_colors[d.model]
+        }),
+        Plot.dot(flatModelInferences.filter(f => selected?.Theme == f.Theme), {
+          x: d => d.model_n_valence + model_offsets[d.model][0],
+          y: d => d.model_n_arousal + model_offsets[d.model][1],
+          fill: d => models_colors[d.model],
+          symbol: 'diamond2',
+          tip: true,
+          title: selected_plot_tipFun
+        }),
+        ...graphBaseMarks
+      ]
+    })
+
+    function generateImageBlock() {
+
+      const imageDimensions = [300, 250]
+
+      const boundingDiv = (inside) => html`
+      <div style='width:${imageDimensions[0]}px;height:${imageDimensions[1]}px;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;border: 1px solid darkgrey;'>${inside}</div>`
+
+      if (selected == null) return boundingDiv('None');
+      const forbiddenImages = ['BDSM', 'Dead bodies', 'Injury', 'Severed finger', 'carcass', 'Tumor','Nude'];
+      const isImageForbidden = forbiddenImages.some(im => selected?.Theme.includes(im))
+
+      const forbiddenDiv = html`<i>Forbidden</i>`
+      const labelBox = html`<div style='position: absolute; left: 0px; top: -1.5rem;'>${selected.Theme}</div>`
+      const imageBox = html`<img src='https://emotional-geographies-s3-bucket.s3.us-east-1.amazonaws.com/oasis_dataset/${selected?.Theme}.jpg' height='${imageDimensions[1]}' width='${imageDimensions[0]}' style='position: relative;top: 3px;'/>`
+
+      return boundingDiv(html`${labelBox}${isImageForbidden ? forbiddenDiv : imageBox}`)
+    }
+
+    function generateStatsBlock() {
+      const dims = [150, 200]
+
+      const boundingDiv = (inside) => html`
+          <div style='padding: 0 15px;height:${dims[1]}px; width: ${dims[0]}px;background: hsl(275 100% 50% / 10%);border-radius: 5%;display: flex; flex-direction: column; justify-content:center; gap: 5px;align-items: center;'>${inside}</div>`
+
+      if (selected == null) return boundingDiv('None');
+
+      const {
+              Valence_mean: vmean, Valence_SD: vsd, Valence_N: vN,
+              Arousal_mean: amean, Arousal_SD: asd, Arousal_N: aN,
+            } = selected;
+
+      const frm = d3.format('.2f')
+
+      const showStat = (name, mean, sd, N) => html`<div><b>${name}</b></div> μ: ${frm(mean)} σ: ${frm(sd)} N: ${N}</div>`
+
+      return boundingDiv(html`${showStat('Valence',vmean,vsd, vN)}${showStat('Arousal',amean, asd, aN)}`)
+
+    }
+
+    function generateModelsBlocks() {
+      const dims = [200, 450]
+
+      const boundingDiv = (inside, bgcolor) => html`
+          <div style='padding: 0 15px;height:${dims[1]}px; width: ${dims[0]}px;background: ${bgcolor};border-radius: 5%;display: flex; flex-direction: column; justify-content:center; gap: 5px;align-items: center;'>${inside}</div>`
+
+      if (selected == null) return boundingDiv('None', 'white');
+
+      function generateModelBlock(result) {
+
+        const {
+                model, model_valence, model_arousal, valence_explanation, arousal_explanation
+              } = result;
+
+
+        const {
+                Valence_mean: vmean, Valence_SD: vsd, Valence_N: vN,
+                Arousal_mean: amean, Arousal_SD: asd, Arousal_N: aN,
+              } = selected;
+
+        const frm = d3.format('.2f')
+        const fontSize = 0.8;
+
+        return boundingDiv(
+          html`
+              <div><b>${model}</b></div>
+              <div>Valence: <b>${frm(model_valence)}</b></div>
+              <div style="font-size: ${fontSize}rem;"><i>${valence_explanation}</i></div>
+              <div>Arousal: <b>${frm(model_arousal)}</b></div>
+              <div style="font-size: ${fontSize}rem;"><i>${arousal_explanation}</i></div>
+            `
+          , `${models_colors[result.model].slice(0,-1)} / 50%)`)
+
+      }
+
+      return modelsToShow
+        .map(model => selected.model_results.find(f => f.model == model))
+        .filter(f => f)
+        .map(generateModelBlock)
+
+    }
+
+
+    display(html`
+    <div style='display:flex;justify-content: space-evenly;align-items: center;height: 500px; width: ${width}px'>
+          ${selected_plot}
+          ${generateImageBlock()}
+          ${generateStatsBlock()}
+          </div>
+    <div style='display:flex;justify-content: space-evenly;align-items: center;height: 500px; margin-left: -250px; width: ${width+ 550}px;'>
+    <div style='display:flex;justify-content: space-evenly;align-items: center;'>
+          ${generateModelsBlocks()}
+          </div>
+        </div>`)
+  </script>
+  <script id="47" type="text/x-typescript">
+    const baseSelection = evaluated_models.filter(f => !['gemini-2.5-flash'].includes(f))
+    const modelsToShow = view(Inputs.checkbox(evaluated_models, {label: 'Show models', value: baseSelection}))
+  </script>
+  <script id="27" type="text/markdown">
+    # Stop! ✋
+    No unauthorized personnel beyond this point…
+    Dangerous code ahead
+  </script>
+  <script id="3" type="text/markdown">
+    ## Data
+  </script>
+  <script id="4" type="text/markdown">
+    Data used in this study is proceed locally, being made available within a duckdb local instance.
+  </script>
+  <script id="14" type="text/markdown">
+    #### Model performance
+    Overall performance measured for each model
+  </script>
+  <script id="15" type="text/x-typescript">
+    const basis_data = oasis_dataset.map(d => ({
+      ...d,
+      valence: normalizeFun(d.Valence_mean),
+      arousal: normalizeFun(d.Arousal_mean),
+      model_results: models_output
+                      .filter(f => f.name == d.Theme)
+                      .filter(f => evaluated_models.includes(f.model))
+                      .map(({model, model_output, input_tokens, output_tokens}) => ({
+                              model,
+                              input_tokens, output_tokens,
+                              ...JSON.parse(model_output)
+                            }))
+                      .map(({model,
+                            valence, arousal,
+                            arousal_explanation, valence_explanation,
+                            input_tokens, output_tokens}) => ({
+                              model,
+                              valence_explanation,
+                              arousal_explanation,
+                              model_valence: valence,
+                              model_arousal: arousal,
+                              model_n_valence: normalizeFun(valence),
+                              model_n_arousal: normalizeFun(arousal),
+                              input_tokens,
+                              output_tokens
+                      }))
+    }))
+    .filter(f => f.model_results.length > 1)
+
+    const exploded_data = basis_data.map(photo => photo.model_results.map(results => ({
+        ...photo,
+        ...results
+      })))
+      .flat();
+
+    const modelPerformanceMetrics = evaluated_models.map(model => {
+      const model_data = exploded_data.filter(f => f.model == model)
+      const mdata = model_data.map(d => ({
+        ...d,
+        // Valence
+        v_e: d.model_valence - d.Valence_mean, // Error
+        v_w: Math.pow(d.Valence_SD,-2) / d3.sum(model_data, d => Math.pow(d.Valence_SD,-2)), // Weight (based on std)
+        // Arousal
+        a_e: d.model_arousal - d.Arousal_mean, // Error
+        a_w: Math.pow(d.Arousal_SD,-2) / d3.sum(model_data, d => Math.pow(d.Arousal_SD,-2)), // Weight (based on std)
+      })).map(d => ({
+        ...d,
+        // Valence
+        v_ae: Math.abs(d.v_e), // Absolute error
+        v_we: d.v_e * d.v_w, // Weighted error
+        v_se: Math.pow(d.v_e,2), // Squared error
+        v_wse: Math.pow(d.v_e,2) * d.v_w ,  // Weighted squared error
+        // Arousal
+        a_ae: Math.abs(d.a_e), // Absolute error
+        a_we: d.a_e * d.a_w, // Weighted error
+        a_se: Math.pow(d.a_e,2), // Squared error
+        a_wse: Math.pow(d.a_e,2) * d.a_w ,  // Weighted squared error
+      }));
+
+      const v_rmse = Math.sqrt(d3.sum(mdata, d => d.v_se) / mdata.length)
+      const v_mae = d3.sum(mdata, d => d.v_ae) / mdata.length
+      const v_me = d3.sum(mdata, d => d.v_e) / mdata.length
+      const v_wrmse = Math.sqrt(d3.sum(mdata, d => d.v_wse))
+      const v_wme = d3.sum(mdata, d => d.v_we)
+
+      const a_rmse = Math.sqrt(d3.sum(mdata, d => d.a_se) / mdata.length)
+      const a_mae = d3.sum(mdata, d => d.a_ae) / mdata.length
+      const a_me = d3.sum(mdata, d => d.a_e) / mdata.length
+      const a_wrmse = Math.sqrt(d3.sum(mdata, d => d.a_wse))
+      const a_wme = d3.sum(mdata, d => d.a_we)
+
+      const a_o_sd = d3.sum(mdata, d => d.Arousal_SD) / mdata.length
+      const v_o_sd = d3.sum(mdata, d => d.Valence_SD) / mdata.length
+
+      const rmse_2d = Math.sqrt(d3.sum(mdata, d => d.a_se + d.v_se) / mdata.length)
+      const wrmse_2d = Math.sqrt(d3.sum(mdata, d => d.a_wse + d.v_wse))
+
+      const rmse_simple = (a_rmse + v_rmse)/2
+      const wrmse_simple = (a_wrmse + v_wrmse)/2
+
+      // Pricing
+
+      const mean_input_tokens = d3.mean(mdata, d => d.input_tokens);
+      const mean_output_tokens = d3.mean(mdata, d => d.output_tokens);
+
+      const mean_input_cost = d3.mean(mdata, d => d.input_tokens * models_pricing[model].cost_per_input_token);
+      const mean_output_cost = d3.mean(mdata, d => d.output_tokens * models_pricing[model].cost_per_output_token);
+
+      const mean_cost = d3.mean(mdata, d => d.input_tokens * models_pricing[model].cost_per_input_token + d.output_tokens * models_pricing[model].cost_per_output_token);
+
+      return {
+              model,
+              n: mdata.length,
+              rmse_2d, wrmse_2d,
+              rmse_simple, wrmse_simple,
+              v_rmse, a_rmse,
+              v_wrmse, a_wrmse,
+              v_mae, a_mae,
+              v_me, a_me,
+              v_wme, a_wme,
+              mean_cost, mean_input_cost, mean_output_cost,
+              mean_input_tokens, mean_output_tokens
+              // v_o_sd, a_o_sd,
+             }
+    })
+
+    display({basis_data, exploded_data, modelPerformanceMetrics})
+  </script>
+  <script id="24" type="text/markdown">
+    #### Model outputs
+    What each model outputted for each photo.
+  </script>
+  <script id="2" type="application/sql" database="emotional_geographies" output="models_output">
+    with base as (
+      select
+        split(photo_id,'_')[2] as name
+        , model
+        , model_output as model_output_raw
+        ,
+          case
+            when ((model_output) ->> 'raw_text') is not null
+              then CONCAT('{',split(split(((model_output) ->> 'raw_text'),'{')[2],'}')[1],'}')
+            else model_output
+          end as model_output
+        , input_tokens
+        , output_tokens
+      from
+        model_output
+      where
+        left(photo_id,5) = 'oasis'
+        and model_output is not null
+        and ((model_output) ->> 'raw_text') is null
+        --and not model in ('llama4-scout') --, 'gemini-2.0-flash')
+        and TRY_CAST((model_output -> 'arousal') as FLOAT) is not null
+        and TRY_CAST((model_output -> 'valence') as FLOAT) is not null
+        and input_tokens is not null
+        and output_tokens is not null
+    )
+    select
+      name
+      , model
+      , (model_output ->> 'arousal')::FLOAT as arousal
+      , (model_output -> 'valence')::FLOAT as valence
+      , (model_output ->> 'arousal_explanation') as arousal_explanation
+      , (model_output ->> 'valence_explanation') as valence_explanation
+      , (model_output ->> '$.scene_elements[*]') as scene_elements
+      , input_tokens
+      , output_tokens
+      , model_output
+    from base
+  </script>
+  <script id="19" type="text/markdown">
+    #### Oasis dataset
+    Original dataset used as baseline.
+  </script>
+  <script id="20" type="application/sql" database="duckdb" output="oasis_dataset">
+    select * from 'data/OASIS.csv'
+  </script>
+  <script id="16" type="text/markdown">
+    ### Model parameters
+  </script>
+  <script id="17" type="text/x-typescript">
+    const models_colors = {
+      'claude-haiku-45': 'hsl(15 57% 52.5%)',
+      'claude-sonnet-45': 'hsl(15 57% 52.5%)',
+      'llama4-maverick': 'hsl(221 44.1% 41.4%)',
+      'llama4-scout': 'hsl(221 44.1% 41.4%)',
+      'gemini-2.5-flash': 'hsl(136 52.7% 43.1%)',
+      'gemini-2.5-flash-lite': 'hsl(136 52.7% 43.1%)',
+      'gemini-2.5-pro': 'hsl(136 52.7% 43.1%)',
+    }
+
+    const evaluated_models = [
+      ...Object.keys(models_colors)
+    ]
+
+    const offsetGen = () => Math.random()*0.01;
+
+    const model_offsets = Object.assign(...evaluated_models.map(model => ({[model] : [1,2].map(offsetGen)})))
+
+    const models_pricing = {
+      'llama4-scout': {cost_per_input_token: 0.00000017, cost_per_output_token: 0.00000066},
+      'llama4-maverick': {cost_per_input_token: 0.00000024, cost_per_output_token: 0.00000097},
+      'claude-haiku-45': {cost_per_input_token: 0.000001, cost_per_output_token: 0.000005},
+      'claude-sonnet-45': {cost_per_input_token: 0.000003, cost_per_output_token: 0.000015},
+      'gemini-2.5-flash': {cost_per_input_token: 0.0000003, cost_per_output_token: 0.0000025},
+      'gemini-2.5-pro': {cost_per_input_token: 0.00000125, cost_per_output_token: 0.00001},
+      'gemini-2.5-flash-lite': {cost_per_input_token: 0.0000001, cost_per_output_token: 0.0000004},
+    }
+
+    display({evaluated_models, models_colors, model_offsets, models_pricing})
+  </script>
+  <script id="29" type="text/markdown">
+    ## Graph base
+    Aux code to help plotting
+  </script>
+  <script id="31" type="text/markdown">
+    ### Emotions circle
+  </script>
+  <script id="45" type="text/x-typescript">
+    const denormalizeFun = (n) => 3*n + 4
+    const normalizeFun = (n) => (n-4)/3
+
+    display(md`Survey results are from 1 to 7, so we need functions to normalize (transform 1 to 7 -> -1 to 1) and to denormalize (transform -1 to 1 -> 1 to 7). Working mathematically with -1 to 1 is easier`)
+    display(tex`normalizeFun(n) = (n-4)/3`)
+    display(md`\n`)
+    display(tex`denormalizeFun(n) = 3*(n) + 4`)
+  </script>
+  <script id="43" type="text/x-typescript">
+    const emotions = [
+      // "Joy",
+      "Happy",
+      "Delighted",
+      "Excited",
+      // "Fully Aroused",
+      "Tense",
+      "Angry",
+      "Frustrated",
+      // "Fearful",
+      "Depressed",
+      "Bored",
+      "Tired",
+      // "Sleepy",
+      "Calm",
+      "Relaxed",
+      "Content"
+    ]
+
+    const angleOffset = (Math.PI * 2) / emotions.length / 2;
+
+    const emotionScale = d3
+      .scaleQuantize()
+      .domain([0, 2 * Math.PI])
+      .range(emotions)
+
+    function angleToPoint(angle, radius) {
+      return d3.pointRadial(angle + Math.PI / 2, radius);
+    }
+
+    function pointToAngle(x, y) {
+      let angle = -(Math.atan2(x, y) + Math.PI / 2) + Math.PI;
+      angle = angle < 0 ? angle + 2 * Math.PI : angle;
+      return [angle, Math.hypot(x, y)];
+    }
+
+    const emotionsCenterAngles = emotions.map((e) => d3.mean(emotionScale.invertExtent(e)))
+
+    const emotionsCenterPoints = emotionsCenterAngles.map((d) => angleToPoint(d, 1));
+
+    const emotionsRangeAngles = emotionsCenterAngles.map((d) => [
+      d - angleOffset,
+      d + angleOffset
+    ])
+
+    const emotionsRangePoints = emotionsRangeAngles.map((d) =>
+      d.map((a) => angleToPoint(a, 1))
+    );
+
+    const base_circle_radius_increment = 0.3,
+    const text_radius = 0.5,
+
+
+    const frameOpacity = view(Inputs.range([0, 1], {
+      label: "Frame Opacity",
+      step: 0.05,
+      value: 0.2
+    }))
+
+    const circleOpacity = view(Inputs.range([0, 1], {
+      label: "Circle Opacity",
+      step: 0.05,
+      value: 0.2
+    }))
+
+    const graphBaseMarks = [
+      // Circle
+      Plot.line(
+        { length: 21 },
+        {
+          x: (_, i) => d3.pointRadial((i * Math.PI) / 10, 1)[0],
+          y: (_, i) => d3.pointRadial((i * Math.PI) / 10, 1)[1],
+          curve: "natural",
+          marker: false,
+          opacity: circleOpacity
+        }
+      )
+      // Frame
+      // , Plot.frame({
+      //   opacity: frameOpacity
+      // })
+      // Radial lines
+      , Plot.link(emotionsRangePoints.flat(), {
+          x1: 0,
+          y1: 0,
+          x2: (d) => d[0],
+          y2: (d) => d[1],
+          opacity: 0.2,
+          strokeDasharray: "5,5"
+        })
+        // Emotions labels
+        , Plot.text(emotionsCenterPoints, {
+          text: (d, i) => emotions[i],
+          x: (d) =>
+            angleToPoint(
+              pointToAngle(...d)[0],
+              text_radius + base_circle_radius_increment
+            )[0],
+          y: (d) =>
+            angleToPoint(
+              pointToAngle(...d)[0],
+              text_radius + base_circle_radius_increment
+            )[1],
+          opacity: 0.4
+        }),
+    ];
+
+    display({emotions,
+             angleOffset,
+             emotionScale,
+             angleToPoint,
+             pointToAngle,
+             emotionsCenterAngles,
+             emotionsCenterPoints,
+             emotionsRangeAngles,
+             emotionsRangePoints,
+             base_circle_radius_increment,
+             text_radius,
+             graphBaseMarks
+            })
+  </script>
+  <script id="44" type="text/x-typescript">
+    const testAngle = view(Inputs.range([0, Math.PI * 2], {
+      label: "Test Angle",
+      step: 0.0001
+    }))
+
+    const testRadius = view(Inputs.range([0, 1], {
+      label: "Test Radius",
+      step: 0.0001
+    }))
+
+    const axes_config = {
+      domain: [1, 7],
+      ticks: 7,
+      grid: true,
+      transform: denormalizeFun
+    }
+
+    const baseCirclePlot = Plot.plot({
+      width,
+      aspectRatio: 1,
+      grid: true,
+      x: {
+        ...axes_config,
+        transform: denormalizeFun
+      },
+      y: {
+        ...axes_config,
+        transform: denormalizeFun
+      },
+      marks: [
+        // Plot.dot(emotionsCenterPoints),
+        Plot.link(emotionsRangePoints.flat(), {
+          x1: 0,
+          y1: 0,
+          x2: (d) => d[0],
+          y2: (d) => d[1],
+          opacity: 0.2,
+          strokeDasharray: "5,5"
+        }),
+        Plot.link([angleToPoint(testAngle, testRadius)], {
+          x1: 0,
+          y1: 0,
+          x2: (d) => d[0],
+          y2: (d) => d[1],
+          markerEnd: "arrow",
+          strokeWidth: 2
+        }),
+        Plot.text([emotionScale(testAngle)], {
+          frameAnchor: "top-right",
+          dy: -12,
+          opacity: (d) => testRadius
+        }),
+        Plot.link([0], {
+          stroke: 'hsl(25 50% 50% / 100%)',
+          strokeWidth: 2,
+          markerEnd: "arrow",
+          x1: 0,
+          x2: 0,
+          y1: -1,
+          y2: 1,
+        }),
+        Plot.text(['Arousal'], {
+          fill: 'hsl(25 50% 50% / 100%)',
+          frameAnchor: 'top',
+          fontSize: 12,
+          dy: -14
+        }),
+        Plot.link([0], {
+          stroke: 'hsl(272 50% 50% / 100%)',
+          strokeWidth: 2,
+          markerEnd: "arrow",
+          x1: -1,
+          x2: 1,
+          y1: 0,
+          y2: 0,
+        }),
+        Plot.text(['Valence'], {
+          fill: 'hsl(272 50% 50% / 100%)',
+          frameAnchor: 'right',
+          fontSize: 12,
+          dy: -14
+        }),
+        ...graphBaseMarks
+      ]
+    })
+
+    display(baseCirclePlot)
+  </script>
+</notebook>

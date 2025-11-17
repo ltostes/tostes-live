@@ -1,0 +1,11 @@
+{
+  "name": "@tostes/styles",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./reset.css",
+  "exports": {
+    "./reset.css": "./reset.css",
+    "./index.css": "./index.css"
+  }
+}
