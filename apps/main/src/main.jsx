@@ -6,7 +6,6 @@ import '@tostes/styles/index.css';
 
 import Main from './pages/Main/Main';
 import RollerCoasterRama from './pages/RollerCoasterRama';
-import BoardGamePrototype from './pages/BoardGamePrototype/BoardGamePrototype';
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
