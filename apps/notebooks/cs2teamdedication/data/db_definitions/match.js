@@ -1,5 +1,5 @@
 // import { PROFILE_LIST } from '../constants.js';
-import { PROFILE_LIST, dateRounding } from '../constants.js';
+import { dateRounding } from '../constants.js';
 
 export const MATCHES_TABLENAME = 'matches';
 

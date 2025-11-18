@@ -257,6 +257,10 @@ async function main() {
 
     // Profiles
     const profiles = !is_local ? await getProfilesFromAPI(PROFILE_LIST) : await getAllProfilesFromDB(conn);
+    // if (!is_local) {
+    //     await createDBTable(PROFILES_CREATETABLE_SQL_STATEMENT, conn, 'profiles');
+    //     await addProfilesToDB(profiles, conn);
+    // } 
     const allPlayedMatches = getAllPlayedMatchIdsFromProfiles(profiles);
 
     // Matches
