@@ -6,12 +6,14 @@ import '@tostes/styles/index.css';
 
 import Main from './pages/Main/Main';
 import RollerCoasterRama from './pages/RollerCoasterRama';
+import ConsegueAdivinhar from './pages/ConsegueAdivinhar';
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
   { path: "/", element: <Main />},
   { path: "/gmtk-gamejam-2025", element: <RollerCoasterRama />},
+  { path: "/consegueadivinhar", element: <ConsegueAdivinhar />},
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
